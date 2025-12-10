@@ -32,6 +32,7 @@ interface DataContextType {
   addRedemption: (req: RedemptionRequest) => void;
   processRedemption: (id: string, status: 'Approved' | 'Rejected') => void;
   addEvent: (event: EventData) => void;
+  updateEvent: (event: EventData) => void;
   deleteEvent: (id: string) => void;
   deleteUser: (id: string) => void;
   getStudentBonus: (email: string) => number;
@@ -114,6 +115,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setEvents(updatedList);
   };
 
+  const updateEvent = async (event: EventData) => {
+    const updatedList = await EventController.update(event);
+    setEvents(updatedList);
+  };
+
   const deleteEvent = async (id: string) => {
     const updatedList = await EventController.delete(id);
     setEvents(updatedList);
@@ -170,6 +176,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addRedemption,
       processRedemption,
       addEvent,
+      updateEvent,
       deleteEvent,
       deleteUser,
       getStudentBonus,
