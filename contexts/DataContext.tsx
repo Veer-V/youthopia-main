@@ -22,11 +22,11 @@ interface DataContextType {
   completedEvents: Record<string, string[]>;
   redemptions: RedemptionRequest[];
   feedbacks: FeedbackItem[];
-  
+
   // Actions
   login: (email: string, password?: string) => Promise<{ user: UserData | null, error?: string }>;
   addUser: (user: UserData, password?: string) => Promise<boolean>;
-  updateUserBonus: (email: string, amount: number) => void; 
+  updateUserBonus: (email: string, amount: number) => void;
   registerForEvent: (email: string, eventId: string) => void;
   markEventCompleted: (email: string, eventId: string) => void;
   addRedemption: (req: RedemptionRequest) => void;
@@ -53,7 +53,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const fetchData = async () => {
       const u = await UserController.getAll();
       setUsers(u);
-      
+
       const e = await EventController.getAll();
       setEvents(e);
 
@@ -69,7 +69,15 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const f = await FeedbackController.getAll();
       setFeedbacks(f);
     };
-    fetchData();
+
+    fetchData(); // Initial fetch
+
+    // Poll for updates every 5 seconds
+    const interval = setInterval(() => {
+      fetchData();
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // --- Auth & User Actions ---
@@ -81,10 +89,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addUser = async (user: UserData, password?: string) => {
     const result = await AuthController.register(user, password);
     if (result.success) {
-        // Refresh local state from Source of Truth
-        const updatedUsers = await UserController.getAll();
-        setUsers(updatedUsers);
-        return true;
+      // Refresh local state from Source of Truth
+      const updatedUsers = await UserController.getAll();
+      setUsers(updatedUsers);
+      return true;
     }
     return false;
   };
