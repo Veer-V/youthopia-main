@@ -67,27 +67,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-2 md:gap-3 flex-1 min-w-0"
         >
-          {/* Logo Space */}
-          <div className="w-8 h-8 md:w-12 md:h-12 relative flex-shrink-0">
+          {/* Logo Image */}
+          <div className="flex-shrink-0">
             <img
-              src="/splash-logo.png"
-              alt="Logo"
-              className="w-full h-full object-contain"
+              src="/image/youthopia-logo-new.png"
+              alt="MPOWER Youthopia Logo"
+              className="h-12 md:h-16 w-auto object-contain"
               onError={(e) => {
-                // Fallback if no logo image is found
+                // Fallback if logo fails to load
                 e.currentTarget.style.display = 'none';
               }}
             />
-          </div>
-
-          {/* Text Branding */}
-          <div className="flex flex-col leading-none min-w-0">
-            <span className="text-[0.5rem] md:text-xs font-bold text-slate-500 tracking-widest">MPOWER</span>
-            <div className="text-lg md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-purple to-brand-pink relative">
-              YOUTHOPIA
-              <span className="hidden md:inline absolute -top-1 -right-2 text-brand-yellow text-xs animate-pulse">✨</span>
-            </div>
-            <span className="text-[0.4rem] md:text-[0.5rem] text-slate-400 tracking-wider hidden sm:block">Unplug. Unleash. Unmind</span>
           </div>
         </motion.div>
 
@@ -105,31 +95,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
       {/* Hero Section */}
       <main className="relative z-10 flex flex-col items-center text-center mt-8 md:mt-12 px-4 max-w-7xl mx-auto w-full">
 
-        {/* Main Banner Image - Replaced text with Image */}
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.8 }}
-          className="w-full flex justify-center mb-8 relative"
-        >
-          <div className="relative rounded-2xl overflow-hidden shadow-2xl max-w-5xl w-full bg-slate-50 min-h-[300px] md:min-h-[500px] flex items-center justify-center">
-            <img
-              src="/landing-hero.png"
-              alt="Birlotsav Presents MPOWER YOUTHOPIA"
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                e.currentTarget.src = "../image/youthopia-logo.png";
-              }}
-            />
-          </div>
-        </motion.div>
-
         {/* Subtext */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="text-slate-500 text-base md:text-xl max-w-2xl mt-4 leading-relaxed"
+          transition={{ delay: 0.2 }}
+          className="text-slate-500 text-base md:text-xl max-w-2xl leading-relaxed"
         >
           Welcome to <strong className="text-slate-900">Youthopia</strong>! A festival buzzing with excitement.
           From dance duels to business pitches, discover your potential and celebrate with us.
@@ -139,7 +110,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.3 }}
           className="flex flex-col md:flex-row gap-4 mt-10 w-full md:w-auto"
         >
           <Button variant="dark" onClick={onNavigateAuth} className="px-8 py-4 text-base md:text-lg">

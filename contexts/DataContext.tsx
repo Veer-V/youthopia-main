@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { UserData, EventData, FeedbackItem } from '../types';
+import { UserData, EventData, FeedbackItem, SpinFeedbackResponse } from '../types';
 import { AuthController } from '../controllers/authController';
 import { EventController } from '../controllers/eventController';
 import { UserController } from '../controllers/userController';
@@ -22,6 +22,7 @@ interface DataContextType {
   completedEvents: Record<string, string[]>;
   redemptions: RedemptionRequest[];
   feedbacks: FeedbackItem[];
+  spinFeedbacks: SpinFeedbackResponse[];
 
   // Actions
   login: (email: string, password?: string) => Promise<{ user: UserData | null, error?: string }>;
@@ -37,6 +38,7 @@ interface DataContextType {
   deleteUser: (id: string) => void;
   getStudentBonus: (email: string) => number;
   addFeedback: (feedback: FeedbackItem) => void;
+  addSpinFeedback: (feedback: SpinFeedbackResponse) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -48,6 +50,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [completedEvents, setCompletedEvents] = useState<Record<string, string[]>>({});
   const [redemptions, setRedemptions] = useState<RedemptionRequest[]>([]);
   const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
+  const [spinFeedbacks, setSpinFeedbacks] = useState<SpinFeedbackResponse[]>([]);
 
   // Initial Data Fetch via Controllers
   useEffect(() => {
@@ -69,6 +72,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const f = await FeedbackController.getAll();
       setFeedbacks(f);
+
+      const sf = await FeedbackController.getAllSpinFeedback();
+      setSpinFeedbacks(sf);
     };
 
     fetchData(); // Initial fetch
@@ -153,6 +159,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setFeedbacks(updatedList);
   };
 
+  const addSpinFeedback = async (feedback: SpinFeedbackResponse) => {
+    const updatedList = await FeedbackController.addSpinFeedback(feedback);
+    setSpinFeedbacks(updatedList);
+  };
+
   // --- Helpers ---
 
   const getStudentBonus = (email: string) => {
@@ -168,6 +179,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       completedEvents,
       redemptions,
       feedbacks,
+      spinFeedbacks,
       login,
       addUser,
       updateUserBonus,
@@ -180,7 +192,8 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       deleteEvent,
       deleteUser,
       getStudentBonus,
-      addFeedback
+      addFeedback,
+      addSpinFeedback
     }}>
       {children}
     </DataContext.Provider>

@@ -9,7 +9,8 @@ import { UserData } from '../../types';
 interface RedeemItem {
   name: string;
   cost: number;
-  emoji: string;
+  emoji?: string;
+  image?: string;
 }
 
 interface RedeemProps {
@@ -34,10 +35,10 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
   }, [toast]);
 
   const items: RedeemItem[] = [
-    { name: 'Diary', cost: 750, emoji: '📔' },
-    { name: 'Sipper', cost: 550, emoji: '🥤' },
-    { name: 'Keychain', cost: 350, emoji: '🔑' },
-    { name: 'Badge', cost: 150, emoji: '📛' },
+    { name: 'Diary', cost: 750, image: '/image/diary.png' },
+    { name: 'Sipper', cost: 550, image: '/image/sipper.png' },
+    { name: 'Keychain', cost: 350, image: '/image/keychain.png' },
+    { name: 'Badge', cost: 150, image: '/image/badge.png' },
   ];
 
   const handleConfirm = () => {
@@ -114,14 +115,22 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
               key={i}
               variants={itemVariant}
               whileHover={canAfford ? { y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" } : {}}
-              className={`p-4 rounded-2xl shadow-sm border flex flex-col items-center text-center transition-all ${canAfford ? 'bg-white border-slate-100' : 'bg-slate-50 border-slate-100 opacity-60 grayscale'}`}
+              className={`p-4 rounded-2xl shadow-sm border flex flex-col items-center text-center transition-all ${canAfford ? 'bg-white border-slate-100' : 'bg-slate-50 border-slate-100 opacity-60'}`}
             >
               <motion.div
                 whileHover={canAfford ? { rotate: [0, -15, 15, -15, 0], scale: 1.2 } : {}}
                 transition={{ type: "spring", stiffness: 300, damping: 10 }}
-                className="text-4xl mb-3 cursor-pointer"
+                className="mb-3 cursor-pointer"
               >
-                {item.emoji}
+                {item.image ? (
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-16 h-16 object-contain"
+                  />
+                ) : (
+                  <span className="text-4xl">{item.emoji}</span>
+                )}
               </motion.div>
               <h3 className="font-bold text-slate-800 text-sm mb-1">{item.name}</h3>
               <div className={`font-bold text-sm mb-3 ${canAfford ? 'text-brand-purple' : 'text-slate-400'}`}>{item.cost} Bonus</div>
@@ -129,8 +138,8 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
                 onClick={() => canAfford && setSelectedItem(item)}
                 disabled={!canAfford}
                 className={`w-full py-2 rounded-lg text-xs font-bold transition-all ${canAfford
-                    ? 'bg-slate-100 hover:bg-brand-purple hover:text-white text-slate-700 cursor-pointer'
-                    : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                  ? 'bg-slate-100 hover:bg-brand-purple hover:text-white text-slate-700 cursor-pointer'
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                   }`}
               >
                 {canAfford ? 'Redeem' : 'Need more Bonus'}
@@ -149,8 +158,8 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
             exit={{ opacity: 0, y: 20, x: '-50%' }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className={`fixed bottom-8 left-1/2 z-[100] px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 font-bold text-sm min-w-[300px] justify-center backdrop-blur-md ${toast.type === 'success'
-                ? 'bg-slate-900/90 text-white border border-slate-700'
-                : 'bg-red-500/90 text-white border border-red-400'
+              ? 'bg-slate-900/90 text-white border border-slate-700'
+              : 'bg-red-500/90 text-white border border-red-400'
               }`}
           >
             {toast.type === 'success' ? (
@@ -228,8 +237,16 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
               ) : (
                 <>
                   <div className="text-center mb-6 pt-2">
-                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-5xl mx-auto mb-4 border border-slate-100 shadow-inner">
-                      {selectedItem.emoji}
+                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100 shadow-inner">
+                      {selectedItem.image ? (
+                        <img
+                          src={selectedItem.image}
+                          alt={selectedItem.name}
+                          className="w-14 h-14 object-contain"
+                        />
+                      ) : (
+                        <span className="text-5xl">{selectedItem.emoji}</span>
+                      )}
                     </div>
                     <h3 className="text-2xl font-bold text-slate-900">Redeem Item?</h3>
                     <p className="text-slate-500 text-sm mt-2 px-4">

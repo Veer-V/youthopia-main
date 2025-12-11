@@ -65,3 +65,14 @@ export interface FeedbackItem {
   emoji: string;
   timestamp: string;
 }
+
+export interface SpinFeedbackResponse {
+  id: string;
+  userEmail: string;
+  userName: string;
+  timestamp: string;
+  prizeAmount: number;
+  rating: number; // 1-5 stars
+  favoriteAspect: 'Events' | 'Prizes' | 'Community' | 'Organization' | 'Other';
+  wouldRecommend: 'Yes' | 'No' | 'Maybe';
+}
