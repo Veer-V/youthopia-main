@@ -141,7 +141,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
       case 'redeem':
         return <Redeem onRedeem={handleRedeem} userBonus={bonus} user={user} />;
       case 'score':
-        return <Score bonus={bonus} />;
+        return <Score bonus={bonus} registeredEventIds={registeredEventIds} />;
       case 'map':
         return <MapPage />;
       case 'help':

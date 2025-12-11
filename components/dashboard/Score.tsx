@@ -5,6 +5,7 @@ import { ClipboardList, Trophy, Star, Target } from 'lucide-react';
 
 interface ScoreProps {
   bonus: number;
+  registeredEventIds?: string[];
 }
 
 const AnimatedCounter = ({ value }: { value: number }) => {
@@ -19,13 +20,14 @@ const AnimatedCounter = ({ value }: { value: number }) => {
   return <motion.span>{rounded}</motion.span>;
 };
 
-const Score: React.FC<ScoreProps> = ({ bonus }) => {
-  // Mock performance data based on bonus points scaling
+const Score: React.FC<ScoreProps> = ({ bonus, registeredEventIds = [] }) => {
+  const eventCount = registeredEventIds.length;
+  const pointsReceived = bonus;
+  
+  // Performance data with event participation and points received
   const scores: { title: string; score: number; color: string }[] = [
-    { title: "Engagement Activity", score: Math.min(100, Math.round((bonus / 1000) * 80) + 20), color: "bg-brand-pink" },
-    { title: "Event Participation", score: Math.min(100, Math.round((bonus / 800) * 70) + 10), color: "bg-brand-purple" },
-    { title: "Social Connect", score: Math.min(100, Math.round((bonus / 1200) * 90) + 15), color: "bg-brand-yellow" },
-    { title: "Creative Expression", score: Math.min(100, Math.round((bonus / 900) * 60) + 30), color: "bg-brand-orange" }
+    { title: "Events Participated", score: eventCount, color: "bg-brand-purple" },
+    { title: "Points Received", score: pointsReceived, color: "bg-brand-yellow" }
   ];
 
   return (
@@ -88,12 +90,12 @@ const Score: React.FC<ScoreProps> = ({ bonus }) => {
               <div key={idx}>
                  <div className="flex justify-between mb-2">
                     <span className="font-medium text-sm text-slate-700">{item.title}</span>
-                    <span className="font-bold text-sm text-slate-900">{item.score}/100</span>
+                    <span className="font-bold text-sm text-slate-900">{item.score}</span>
                  </div>
                  <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden relative">
                     <motion.div 
                       initial={{ width: "0%" }}
-                      animate={{ width: `${item.score}%` }}
+                      animate={{ width: item.title === "Events Participated" ? `${Math.min(100, (item.score / 20) * 100)}%` : `${Math.min(100, (item.score / 1000) * 100)}%` }}
                       transition={{ duration: 1.5, delay: idx * 0.2, ease: [0.22, 1, 0.36, 1] }}
                       className={`${item.color} h-3 rounded-full relative overflow-hidden`}
                     >
