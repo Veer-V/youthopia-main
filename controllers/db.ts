@@ -11,4 +11,4 @@ export const DB = {
     if (typeof window === 'undefined') return;
     localStorage.setItem(key, JSON.stringify(data));
   }
-};
+};  

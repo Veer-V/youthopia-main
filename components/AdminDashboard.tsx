@@ -61,15 +61,27 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col md:flex-row font-sans">
 
-      {/* Mobile Sidebar Toggle */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="md:hidden fixed top-4 right-4 z-50 bg-slate-900 text-white p-2 rounded-full shadow-lg"
-      >
-        <Menu size={24} />
-      </button>
+      {/* Mobile Header */}
+      <header className="md:hidden bg-white text-slate-900 px-4 py-3 flex justify-between items-center z-40 sticky top-0 border-b border-slate-100">
+        <div className="flex items-center gap-2">
+          <img
+            src="/image/youthopia-logo-new.png"
+            alt="MPOWER Youthopia"
+            className="h-10 w-auto object-contain"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
+        <button
+          onClick={() => setSidebarOpen(true)}
+          className="text-slate-900 p-1"
+        >
+          <Menu size={28} strokeWidth={2.5} />
+        </button>
+      </header>
 
       {/* Sidebar */}
       <motion.aside
@@ -112,8 +124,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 setSidebarOpen(false);
               }}
               className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all relative overflow-hidden ${activeSection === item.id
-                  ? 'bg-brand-purple text-white shadow-lg shadow-purple-900/20'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                ? 'bg-brand-purple text-white shadow-lg shadow-purple-900/20'
+                : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                 }`}
             >
               <div className="relative z-10 flex items-center gap-3">
@@ -144,7 +156,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto h-screen p-4 md:p-8 bg-slate-50/50">
+      <main className="flex-1 overflow-y-auto h-[calc(100vh-64px)] md:h-screen p-4 md:p-8 bg-slate-50/50">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeSection}

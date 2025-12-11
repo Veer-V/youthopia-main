@@ -16,6 +16,17 @@ export interface UserData {
   adminId?: string;
   role?: 'student' | 'admin' | 'executive';
   bonus?: number;
+  spinsAvailable?: number;
+  bonusGrantCount?: number;
+  transactions?: Transaction[];
+}
+
+export interface Transaction {
+  id: string;
+  type: 'credit' | 'debit';
+  amount: number;
+  reason: string;
+  timestamp: string;
 }
 
 export interface FeatureCardProps {

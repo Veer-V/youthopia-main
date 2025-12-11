@@ -123,6 +123,36 @@ const Me: React.FC<MeProps> = ({ bonus, user, registeredEventIds }) => {
                </div>
             </div>
          </motion.div>
+         {/* --- Section 3: Points History --- */}
+         <motion.div variants={item} className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <h3 className="font-bold text-lg flex items-center gap-2 text-slate-800 mb-6">
+               <div className="p-2 bg-slate-100 rounded-lg text-slate-600"><Book size={20} /></div>
+               Transaction History
+            </h3>
+
+            <div className="space-y-4 max-h-64 overflow-y-auto">
+               {userData.transactions && userData.transactions.length > 0 ? (
+                  userData.transactions.map((txn, idx) => (
+                     <div key={idx} className="flex justify-between items-center p-3 hover:bg-slate-50 rounded-xl transition-colors border border-slate-50">
+                        <div className="flex items-center gap-3">
+                           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${txn.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                              {txn.type === 'credit' ? <Sparkles size={16} /> : <Award size={16} />}
+                           </div>
+                           <div>
+                              <div className="text-sm font-bold text-slate-800">{txn.reason}</div>
+                              <div className="text-xs text-slate-400">{txn.timestamp}</div>
+                           </div>
+                        </div>
+                        <span className={`font-bold ${txn.type === 'credit' ? 'text-green-600' : 'text-red-500'}`}>
+                           {txn.type === 'credit' ? '+' : '-'}{txn.amount}
+                        </span>
+                     </div>
+                  ))
+               ) : (
+                  <div className="text-center text-slate-400 py-4">No recent transactions found.</div>
+               )}
+            </div>
+         </motion.div>
       </motion.div>
    );
 };

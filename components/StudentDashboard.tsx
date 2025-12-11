@@ -33,12 +33,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
     updateUserBonus,
     registerForEvent,
     events,
-    addSpinFeedback
+    addSpinFeedback,
+    consumeSpin
   } = useData();
 
   const [activeSection, setActiveSection] = useState<DashboardSection>('me');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [spinsUsed, setSpinsUsed] = useState(0);
 
   // Derived state from Context
   const bonus = user ? getStudentBonus(user.email) : 0;
@@ -63,7 +63,9 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
   };
 
   const handleSpinUsed = () => {
-    setSpinsUsed(prev => prev + 1);
+    if (user) {
+      consumeSpin(user.email);
+    }
   };
 
   const handleNavigateToRedeem = () => {
@@ -87,15 +89,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
     addSpinFeedback(feedback);
   };
 
-  // Logic: 1 Spin for every 4 Engagement Activities registered/completed (NO FREE SPIN)
+  // Logic: Count Engagement Activities
   const engagementEventsRegistered = useMemo(() => registeredEventIds.filter(id => {
     const evt = events.find(e => e.id === id);
     return evt?.category === 'Engagement';
   }), [registeredEventIds, events]);
 
-  // No free spin - users must complete 4 events to unlock each spin
-  const totalSpinsEarned = Math.floor(engagementEventsRegistered.length / 4);
-  const spinsAvailable = Math.max(0, totalSpinsEarned - spinsUsed);
+  // Spins are now granted by Admin based on sets of 4 events
+  const spinsAvailable = user?.spinsAvailable || 0;
 
   const menuItems = [
     { id: 'me', label: 'Me', icon: <User size={20} /> },
@@ -146,6 +147,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
       case 'help':
         return <Help />;
       default:
+        // Pass transactions to "Me" or separate Points logic if it exists there
         return <Me bonus={bonus} user={user} registeredEventIds={registeredEventIds} />;
     }
   };
@@ -154,7 +156,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col md:flex-row font-sans overflow-hidden">
 
       {/* Mobile Header */}
-      <header className="md:hidden bg-brand-dark text-white p-4 flex justify-between items-center z-40 sticky top-0 shadow-md">
+      <header className="md:hidden bg-white text-slate-900 px-4 py-3 flex justify-between items-center z-40 sticky top-0 border-b border-slate-100">
         <div className="flex items-center gap-2">
           <img
             src="/image/youthopia-logo-new.png"
@@ -165,8 +167,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
             }}
           />
         </div>
-        <button onClick={() => setIsMobileMenuOpen(true)} className="text-white p-1">
-          <Menu size={24} />
+        <button onClick={() => setIsMobileMenuOpen(true)} className="text-slate-900 p-1">
+          <Menu size={28} strokeWidth={2.5} />
         </button>
       </header>
 

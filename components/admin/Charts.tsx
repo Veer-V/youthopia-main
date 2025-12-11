@@ -19,39 +19,49 @@ export const SimpleLineChart: React.FC<LineChartProps> = ({ data, color = '#8b5c
   return (
     <div className="w-full h-full flex items-end">
       <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible" preserveAspectRatio="none">
+
+        {/* Shadow/Glow Line */}
         <motion.polyline
           points={points}
           fill="none"
           stroke={color}
-          strokeWidth="2"
+          strokeWidth="6"
+          strokeOpacity="0.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
           transition={{ duration: 1.5, ease: "easeInOut" }}
         />
-        {/* Gradient fill */}
-        <motion.path
-          d={`M 0,100 ${data.map((val, i) => `L ${(i / (data.length - 1)) * 100},${100 - (val / max) * 100}`).join(' ')} L 100,100 Z`}
-          fill={color}
-          fillOpacity="0.1"
-          stroke="none"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.1 }}
-          transition={{ duration: 1 }}
+
+        {/* Main Line */}
+        <motion.polyline
+          points={points}
+          fill="none"
+          stroke={color}
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
         />
+
         {/* Dots */}
         {data.map((val, i) => (
-            <motion.circle
-                key={i}
-                cx={(i / (data.length - 1)) * 100}
-                cy={100 - (val / max) * 100}
-                r="1.5"
-                fill="white"
-                stroke={color}
-                strokeWidth="1"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 1 + i * 0.1 }}
-            />
+          <motion.circle
+            key={i}
+            cx={(i / (data.length - 1)) * 100}
+            cy={100 - (val / max) * 100}
+            r="3"
+            fill="white"
+            stroke={color}
+            strokeWidth="2.5"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 1 + i * 0.1 }}
+            className="drop-shadow-sm"
+          />
         ))}
       </svg>
     </div>
@@ -70,17 +80,17 @@ export const SimpleBarChart: React.FC<BarChartProps> = ({ data, labels, color = 
     <div className="w-full h-full flex items-end justify-between gap-2">
       {data.map((val, i) => (
         <div key={i} className="flex-1 flex flex-col justify-end h-full group relative">
-           <motion.div
-             initial={{ height: 0 }}
-             animate={{ height: `${(val / max) * 100}%` }}
-             transition={{ delay: i * 0.1, duration: 0.5 }}
-             className={`w-full rounded-t-md ${color} opacity-80 hover:opacity-100 transition-opacity min-h-[4px]`}
-           />
-           {labels && (
-               <div className="text-[10px] text-center text-slate-400 mt-2 truncate w-full">
-                   {labels[i]}
-               </div>
-           )}
+          <motion.div
+            initial={{ height: 0 }}
+            animate={{ height: `${(val / max) * 100}%` }}
+            transition={{ delay: i * 0.1, duration: 0.5 }}
+            className={`w-full rounded-t-md ${color} opacity-80 hover:opacity-100 transition-opacity min-h-[4px]`}
+          />
+          {labels && (
+            <div className="text-[10px] text-center text-slate-400 mt-2 truncate w-full">
+              {labels[i]}
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -113,7 +123,7 @@ export const SimpleAreaChart: React.FC<AreaChartProps> = ({ data, color = '#eab3
             <stop offset="100%" stopColor={fillColor} stopOpacity="0" />
           </linearGradient>
         </defs>
-        
+
         <motion.path
           d={areaPath}
           fill={`url(#gradient-${id})`}
@@ -122,7 +132,7 @@ export const SimpleAreaChart: React.FC<AreaChartProps> = ({ data, color = '#eab3
           animate={{ opacity: 1, d: areaPath }}
           transition={{ duration: 1.5, ease: "easeOut" }}
         />
-        
+
         <motion.polyline
           points={points}
           fill="none"
@@ -134,23 +144,23 @@ export const SimpleAreaChart: React.FC<AreaChartProps> = ({ data, color = '#eab3
           animate={{ pathLength: 1 }}
           transition={{ duration: 2, ease: "easeInOut" }}
         />
-        
+
         {/* Highlight max point */}
         {data.map((val, i) => {
-           if (val === Math.max(...data)) {
-               return (
-                 <circle 
-                   key={i}
-                   cx={(i / (data.length - 1)) * 100}
-                   cy={100 - (val / max) * 100}
-                   r="3"
-                   fill={color}
-                   stroke="#111"
-                   strokeWidth="1"
-                 />
-               )
-           }
-           return null;
+          if (val === Math.max(...data)) {
+            return (
+              <circle
+                key={i}
+                cx={(i / (data.length - 1)) * 100}
+                cy={100 - (val / max) * 100}
+                r="3"
+                fill={color}
+                stroke="#111"
+                strokeWidth="1"
+              />
+            )
+          }
+          return null;
         })}
       </svg>
     </div>

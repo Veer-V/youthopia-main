@@ -14,13 +14,35 @@ const App: React.FC = () => {
   const [user, setUser] = useState<UserData | null>(null);
   const [initialBonus, setInitialBonus] = useState(0);
 
+  // Check for session persistence
+  React.useEffect(() => {
+    const session = localStorage.getItem('yth_session');
+    if (session) {
+      try {
+        const parsedUser = JSON.parse(session);
+        setUser(parsedUser);
+        setCurrentView('dashboard');
+      } catch (e) {
+        console.error("Failed to restore session", e);
+        localStorage.removeItem('yth_session');
+      }
+    }
+  }, []);
+
   const handleLogin = (userData?: UserData, bonus: number = 0) => {
     if (userData) {
       setUser(userData);
       setInitialBonus(bonus);
+      localStorage.setItem('yth_session', JSON.stringify(userData));
       // Role handling is done in renderView
       setCurrentView('dashboard');
     }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('yth_session');
+    setCurrentView('landing');
   };
 
   const renderView = () => {
@@ -48,8 +70,8 @@ const App: React.FC = () => {
             exit={{ opacity: 0, x: '100%' }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
-            <AuthPage 
-              onBack={() => setCurrentView('landing')} 
+            <AuthPage
+              onBack={() => setCurrentView('landing')}
               onLogin={handleLogin}
             />
           </motion.div>
@@ -57,17 +79,17 @@ const App: React.FC = () => {
       case 'dashboard':
         // Determine which dashboard to show based on user role
         if (user?.role === 'executive') {
-           return (
-             <motion.div
+          return (
+            <motion.div
               key="executive-dashboard"
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-             >
-                <ExecutiveDashboard onLogout={() => setCurrentView('landing')} />
-             </motion.div>
-           );
+            >
+              <ExecutiveDashboard onLogout={handleLogout} />
+            </motion.div>
+          );
         }
         if (user?.role === 'admin') {
           return (
@@ -78,7 +100,7 @@ const App: React.FC = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
-               <AdminDashboard onLogout={() => setCurrentView('landing')} />
+              <AdminDashboard onLogout={handleLogout} />
             </motion.div>
           );
         }
@@ -90,7 +112,7 @@ const App: React.FC = () => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
           >
-             <StudentDashboard user={user} onLogout={() => setCurrentView('landing')} initialBonus={initialBonus} />
+            <StudentDashboard user={user} onLogout={handleLogout} initialBonus={initialBonus} />
           </motion.div>
         );
       default:

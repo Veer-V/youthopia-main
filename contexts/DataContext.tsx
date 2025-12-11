@@ -39,6 +39,8 @@ interface DataContextType {
   getStudentBonus: (email: string) => number;
   addFeedback: (feedback: FeedbackItem) => void;
   addSpinFeedback: (feedback: SpinFeedbackResponse) => void;
+  grantEventBonus: (email: string, bonusAmount: number) => void;
+  consumeSpin: (email: string) => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -79,12 +81,22 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     fetchData(); // Initial fetch
 
-    // Poll for updates every 5 seconds
+    // Poll for updates every 2 seconds for near real-time feel
     const interval = setInterval(() => {
       fetchData();
-    }, 5000);
+    }, 2000);
 
-    return () => clearInterval(interval);
+    // Listen for cross-tab updates (e.g. another user/admin doing something in a different tab)
+    const handleStorageChange = () => {
+      fetchData();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   // --- Auth & User Actions ---
@@ -111,6 +123,16 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const deleteUser = async (id: string) => {
     const updatedList = await UserController.delete(id);
+    setUsers(updatedList);
+  };
+
+  const grantEventBonus = async (email: string, bonusAmount: number) => {
+    const updatedList = await UserController.grantEventBonus(email, bonusAmount);
+    setUsers(updatedList);
+  };
+
+  const consumeSpin = async (email: string) => {
+    const updatedList = await UserController.consumeSpin(email);
     setUsers(updatedList);
   };
 
@@ -193,7 +215,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       deleteUser,
       getStudentBonus,
       addFeedback,
-      addSpinFeedback
+      addSpinFeedback,
+      grantEventBonus,
+      consumeSpin
     }}>
       {children}
     </DataContext.Provider>

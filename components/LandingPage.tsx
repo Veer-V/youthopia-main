@@ -53,68 +53,62 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
   ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 relative overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-gradient-to-b from-[#e0faff] via-white to-white text-slate-900 relative overflow-x-hidden font-sans">
 
-      {/* Background Gradients to match image glow */}
-      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-brand-purple/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute top-[10%] right-[-10%] w-[500px] h-[500px] bg-brand-yellow/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-0 left-[20%] w-[800px] h-[400px] bg-brand-pink/5 rounded-full blur-[120px] pointer-events-none" />
+      {/* Decorative Bunting / Triangles */}
+      <div className="absolute top-20 left-10 md:left-32 transform -rotate-12 pointer-events-none opacity-80">
+        <div className="w-0 h-0 border-l-[15px] border-l-transparent border-t-[25px] border-t-blue-600 border-r-[15px] border-r-transparent"></div>
+      </div>
+      <div className="absolute top-24 left-24 md:left-52 transform rotate-12 pointer-events-none opacity-80">
+        <div className="w-0 h-0 border-l-[15px] border-l-transparent border-t-[25px] border-t-yellow-400 border-r-[15px] border-r-transparent"></div>
+      </div>
+      <div className="absolute top-20 right-10 md:right-32 transform rotate-12 pointer-events-none opacity-80">
+        <div className="w-0 h-0 border-l-[15px] border-l-transparent border-t-[25px] border-t-blue-600 border-r-[15px] border-r-transparent"></div>
+      </div>
+      <div className="absolute top-24 right-24 md:right-52 transform -rotate-12 pointer-events-none opacity-80">
+        <div className="w-0 h-0 border-l-[15px] border-l-transparent border-t-[25px] border-t-yellow-400 border-r-[15px] border-r-transparent"></div>
+      </div>
 
-      {/* Navbar */}
-      <nav className="relative z-50 flex justify-between items-center px-4 md:px-6 py-3 md:py-4 max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-2 md:gap-3 flex-1 min-w-0"
-        >
-          {/* Logo Image */}
-          <div className="flex-shrink-0">
-            <img
-              src="/image/youthopia-logo-new.png"
-              alt="MPOWER Youthopia Logo"
-              className="h-12 md:h-16 w-auto object-contain"
-              onError={(e) => {
-                // Fallback if logo fails to load
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex-shrink-0 ml-2"
-        >
-          <Button variant="secondary" onClick={onNavigateAuth} className="px-3 py-1.5 md:px-6 md:py-2 text-xs md:text-sm whitespace-nowrap">
-            Join Now
-          </Button>
-        </motion.div>
+      {/* Navbar - Minimal */}
+      <nav className="relative z-50 flex justify-between items-center px-4 md:px-6 py-4 max-w-7xl mx-auto">
+        <img
+          src="/image/youthopia-logo-new.png"
+          alt="Youthopia Logo"
+          className="h-12 md:h-16 w-auto object-contain"
+        />
+        <Button variant="secondary" onClick={onNavigateAuth} className="px-6 py-2 shadow-lg shadow-cyan-100">
+          Login / Register
+        </Button>
       </nav>
 
       {/* Hero Section */}
-      <main className="relative z-10 flex flex-col items-center text-center mt-8 md:mt-12 px-4 max-w-7xl mx-auto w-full">
+      <main className="relative z-10 flex flex-col items-center text-center mt-4 md:mt-8 px-4 max-w-6xl mx-auto w-full">
 
-        {/* Subtext */}
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-slate-500 text-base md:text-xl max-w-2xl leading-relaxed"
+
+
+        {/* Main Logo & Tagline */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="w-full max-w-3xl mx-auto mb-10 mix-blend-multiply"
         >
-          Welcome to <strong className="text-slate-900">Youthopia</strong>! A festival buzzing with excitement.
-          From dance duels to business pitches, discover your potential and celebrate with us.
-        </motion.p>
+          <img
+            src="/image/youthopia final logo.jpg"
+            alt="MPOWER Youthopia"
+            className="w-full h-auto object-contain drop-shadow-xl"
+          />
+        </motion.div>
 
-        {/* Buttons */}
+        {/* Call to Actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="flex flex-col md:flex-row gap-4 mt-10 w-full md:w-auto"
+          transition={{ delay: 0.5 }}
+          className="flex flex-col sm:flex-row gap-4 mt-4"
         >
-          <Button variant="dark" onClick={onNavigateAuth} className="px-8 py-4 text-base md:text-lg">
-            Join the Community <ArrowRight size={20} />
+          <Button variant="primary" onClick={onNavigateAuth} className="px-10 py-4 text-lg shadow-xl shadow-purple-200">
+            Join the Celebration <ArrowRight size={20} />
           </Button>
           <Button
             variant="white"
@@ -122,38 +116,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
               const element = document.getElementById('events');
               if (element) element.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="px-8 py-4 text-base md:text-lg border-2 border-slate-100"
-            whileHover={{
-              scale: 1.05,
-              backgroundColor: "#fefce8", // light yellow
-              borderColor: "#facc15", // brand-yellow
-              color: "#854d0e"
-            }}
-            whileTap={{
-              scale: 0.95,
-              x: [0, -4, 4, -4, 4, 0], // Shake animation
-              transition: { duration: 0.4 }
-            }}
+            className="px-10 py-4 text-lg border-2 border-slate-100 hover:bg-slate-50"
           >
             Explore Events
           </Button>
         </motion.div>
-
-        {/* Floating elements for vibe */}
-        <div className="absolute top-1/2 right-4 md:right-20 hidden md:block">
-          <motion.div animate={{ y: [0, -20, 0] }} transition={{ duration: 4, repeat: Infinity }}>
-            <div className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-2xl border border-slate-100">
-              🎸
-            </div>
-          </motion.div>
-        </div>
-        <div className="absolute bottom-20 left-4 md:left-20 hidden md:block">
-          <motion.div animate={{ y: [0, 20, 0] }} transition={{ duration: 5, repeat: Infinity, delay: 1 }}>
-            <div className="w-12 h-12 bg-white rounded-full shadow-lg flex items-center justify-center text-2xl border border-slate-100">
-              🚀
-            </div>
-          </motion.div>
-        </div>
 
       </main>
 

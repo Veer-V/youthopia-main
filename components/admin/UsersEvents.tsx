@@ -1,14 +1,14 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, Calendar, Search, Filter, Edit, Trash2, Plus, X, Download, Eye, CheckCircle2, Info } from 'lucide-react';
+import { Users, Calendar, Search, Filter, Edit, Trash2, Plus, X, Download, Eye, CheckCircle2, Info, Gift } from 'lucide-react';
 import Input from '../Input';
 import Button from '../Button';
 import { useData } from '../../contexts/DataContext';
 import { UserData } from '../../types';
 
 const UsersEvents: React.FC = () => {
-   const { users, events, addUser, deleteUser, addEvent, updateEvent, deleteEvent, registrations, completedEvents } = useData();
+   const { users, events, addUser, deleteUser, addEvent, updateEvent, deleteEvent, registrations, completedEvents, grantEventBonus } = useData();
    const [activeTab, setActiveTab] = useState<'users' | 'events'>('users');
    const [searchQuery, setSearchQuery] = useState('');
 
@@ -242,7 +242,20 @@ const UsersEvents: React.FC = () => {
                                     </td>
                                     <td className="p-4 font-bold text-brand-purple">{user.bonus}</td>
                                     <td className="p-4 text-right pr-6 flex justify-end gap-2">
-                                       {/* User Actions: Only Grant Bonus (Gift) - currently not implemented based on request, or removed edit/delete */}
+                                       {acts.filter((a: any) => a.category === 'Engagement').length >= ((user.bonusGrantCount || 0) + 1) * 4 && (
+                                          <Button
+                                             variant="secondary"
+                                             className="text-xs py-1 px-3 h-auto gap-1 bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200"
+                                             onClick={() => {
+                                                if (confirm(`Grant 200 points and 1 spin to ${user.name} for completing 4 events?`)) {
+                                                   grantEventBonus(user.email, 200);
+                                                }
+                                             }}
+                                          >
+                                             <Gift size={14} /> Grant Spin
+                                          </Button>
+                                       )}
+                                       <button onClick={() => handleDeleteUser(user.email)} className="p-2 hover:bg-red-100 rounded-lg text-red-500"><Trash2 size={16} /></button>
                                     </td>
                                  </motion.tr>
                               )
