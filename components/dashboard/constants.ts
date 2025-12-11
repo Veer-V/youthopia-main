@@ -29,7 +29,7 @@ export const events: EventData[] = [
   {
     id: "13",
     title: "Aurora Couture (Fashion Show)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Main Stage",
     category: "Intercollegiate",
@@ -56,7 +56,7 @@ export const events: EventData[] = [
   {
     id: "14",
     title: "Aurora Eloquence (Elocution)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Seminar Hall B",
     category: "Intercollegiate",
@@ -77,7 +77,7 @@ export const events: EventData[] = [
   {
     id: "7",
     title: "Chords of Confluence (Singing)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Main Stage",
     category: "Intercollegiate",
@@ -102,7 +102,7 @@ export const events: EventData[] = [
   {
     id: "11",
     title: "Clash of Cadence (Dance Battle)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Open Air Theatre",
     category: "Intercollegiate",
@@ -124,7 +124,7 @@ export const events: EventData[] = [
   {
     id: "17",
     title: "Cluescape (Treasure Hunt)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Campus Wide",
     category: "Intercollegiate",
@@ -149,7 +149,7 @@ export const events: EventData[] = [
   {
     id: "34",
     title: "Dance Therapy",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Badminton Hall",
     category: "Engagement",
@@ -167,7 +167,7 @@ export const events: EventData[] = [
   {
     id: "23",
     title: "Thinking Outside the Box",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Student Parking",
     category: "Engagement",
@@ -185,7 +185,7 @@ export const events: EventData[] = [
   {
     id: "8",
     title: "Dreamcraft Deck (Pitch Deck)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Conference Room A",
     category: "Intercollegiate",
@@ -208,7 +208,7 @@ export const events: EventData[] = [
   {
     id: "19",
     title: "Framestorm (Comic Flow)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Art Gallery",
     category: "Intercollegiate",
@@ -228,7 +228,7 @@ export const events: EventData[] = [
   {
     id: "16",
     title: "Inkside Out (Creative Writing)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Library Hall",
     category: "Intercollegiate",
@@ -247,7 +247,7 @@ export const events: EventData[] = [
   {
     id: "32",
     title: "Joy of Journaling",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "IT 002",
     category: "Engagement",
@@ -265,7 +265,7 @@ export const events: EventData[] = [
   {
     id: "31",
     title: "Know your conflict",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "NR 005",
     category: "Engagement",
@@ -283,7 +283,7 @@ export const events: EventData[] = [
   {
     id: "27",
     title: "Mental Health Quiz",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Between Main Building and Gymkhana",
     category: "Engagement",
@@ -301,7 +301,7 @@ export const events: EventData[] = [
   {
     id: "33",
     title: "Well Being Kit",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "IT to Main Building 1st Entrance",
     category: "Engagement",
@@ -319,7 +319,7 @@ export const events: EventData[] = [
   {
     id: "24",
     title: "Zindaginama Screening",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "Every Hour",
     loc: "Box Office Near Old NR Entrance",
     category: "Engagement",
@@ -337,7 +337,7 @@ export const events: EventData[] = [
   {
     id: "9",
     title: "Motion Mirage (Mime)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Black Box Theatre",
     category: "Intercollegiate",
@@ -358,7 +358,7 @@ export const events: EventData[] = [
   {
     id: "18",
     title: "Neuro Muse (Digital Art)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Computer Lab",
     category: "Intercollegiate",
@@ -379,7 +379,7 @@ export const events: EventData[] = [
   {
     id: "15",
     title: "Note to Self (Solo Singing)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Mini Auditorium",
     category: "Intercollegiate",
@@ -402,7 +402,7 @@ export const events: EventData[] = [
   {
     id: "5",
     title: "Pigments of the Psyche (Canvas Painting)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Art Gallery",
     category: "Intercollegiate",
@@ -421,7 +421,7 @@ export const events: EventData[] = [
   {
     id: "1",
     title: "Prism Panel (Debate)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Seminar Hall A",
     category: "Intercollegiate",
@@ -446,7 +446,7 @@ export const events: EventData[] = [
   {
     id: "6",
     title: "Psyk Exchange (Mock Trading)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Business Lab",
     category: "Intercollegiate",
@@ -472,7 +472,7 @@ export const events: EventData[] = [
   {
     id: "2",
     title: "Pulse Parade (Group Dance)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Main Stage",
     category: "Intercollegiate",
@@ -497,7 +497,7 @@ export const events: EventData[] = [
   {
     id: "4",
     title: "Roots in Reverb (Folk Dance)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Main Stage",
     category: "Intercollegiate",
@@ -522,7 +522,7 @@ export const events: EventData[] = [
   {
     id: "10",
     title: "Scenezone (Skit)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Auditorium",
     category: "Intercollegiate",
@@ -547,7 +547,7 @@ export const events: EventData[] = [
   {
     id: "37",
     title: "Seeking Help",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Student Parking / Redemption in Mpower Cell",
     category: "Engagement",
@@ -565,7 +565,7 @@ export const events: EventData[] = [
   {
     id: "12",
     title: "Shadows & Light (Solo Classical Dance)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Mini Auditorium",
     category: "Intercollegiate",
@@ -586,7 +586,7 @@ export const events: EventData[] = [
   {
     id: "30",
     title: "Six Thinking Hats",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "NR 009",
     category: "Engagement",
@@ -604,7 +604,7 @@ export const events: EventData[] = [
   {
     id: "28",
     title: "Spin the Wheel",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Student Parking",
     category: "Engagement",
@@ -622,7 +622,7 @@ export const events: EventData[] = [
   {
     id: "20",
     title: "Stellar Spoof (Mimicry)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Open Mic Stage",
     category: "Intercollegiate",
@@ -640,7 +640,7 @@ export const events: EventData[] = [
   {
     id: "29",
     title: "Stroop Effect",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "New Building Before NAMED",
     category: "Engagement",
@@ -658,7 +658,7 @@ export const events: EventData[] = [
   {
     id: "3",
     title: "Unmasking Emotions (Mono Act)",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Black Box Theatre",
     category: "Intercollegiate",
@@ -679,7 +679,7 @@ export const events: EventData[] = [
   {
     id: "21",
     title: "Gratitude Wall",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Student Parking",
     category: "Engagement",
@@ -697,7 +697,7 @@ export const events: EventData[] = [
   {
     id: "25",
     title: "Wall Painting",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "[Not Listed]",
     category: "Engagement",
@@ -715,7 +715,7 @@ export const events: EventData[] = [
   {
     id: "26",
     title: "MH Score Check",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "[Not Listed]",
     category: "Engagement",
@@ -733,7 +733,7 @@ export const events: EventData[] = [
   {
     id: "22",
     title: "Memory Word Recall",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "New Building / Gazebo",
     category: "Engagement",
@@ -751,7 +751,7 @@ export const events: EventData[] = [
   {
     id: "35",
     title: "Trash the Can'ts",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Student Parking",
     category: "Engagement",
@@ -769,7 +769,7 @@ export const events: EventData[] = [
   {
     id: "36",
     title: "Art Therapy / Mind Mania",
-    date: "Nov 23 & 24",
+    date: "Dec 22 & 23",
     time: "All Day",
     loc: "Student Parking",
     category: "Engagement",

@@ -27,7 +27,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
       icon: <Coins size={32} className="text-yellow-600" />,
       bg: "bg-yellow-50",
       title: "Earn & Redeem",
-      desc: "Collect bonus as you participate in events and unlock exclusive cool rewards!",
+      desc: "Collect points as you join the fun. Use them to get cool rewards!",
       action: "Start Earning",
       color: "text-yellow-600",
       target: 'redeem' as const
@@ -36,7 +36,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
       icon: <Calendar size={32} className="text-blue-600" />,
       bg: "bg-blue-50",
       title: "Event Schedule",
-      desc: "Stay updated with the timeline. Never miss your favorite competitions and shows.",
+      desc: "Check what’s happening and when. Never miss your favorite event.",
       action: "View Timeline",
       color: "text-blue-600",
       target: 'activities' as const
@@ -44,8 +44,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
     {
       icon: <MapPin size={32} className="text-purple-600" />,
       bg: "bg-purple-50",
-      title: "Interactive Map",
-      desc: "Navigate the fest effortlessly. Find every venue and stall right at your fingertips.",
+      title: "What's happening, where?",
+      desc: "Find your way around the fest easily. Every place you need is right here",
       action: "Explore Map",
       color: "text-purple-600",
       target: 'map' as const
@@ -99,6 +99,10 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
             className="w-full h-auto object-contain drop-shadow-xl"
           />
         </motion.div>
+        <h2 className="text-l md:text-2xl font-bold text-[#1e293b] text-center">Welcome to Youthopia, a one-of-a-kind Youth Mental Health Fest, buzzing with
+excitement! From dance duels to memory games, from activities that test your
+strength to moments that help you take charge of your mental health, there’s so
+much happening here. And we hope you explore, experience, and enjoy them all!</h2>
 
         {/* Call to Actions */}
         <motion.div
@@ -108,7 +112,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
           className="flex flex-col sm:flex-row gap-4 mt-4"
         >
           <Button variant="primary" onClick={onNavigateAuth} className="px-10 py-4 text-lg shadow-xl shadow-purple-200">
-            Join the Celebration <ArrowRight size={20} />
+            Join the Community <ArrowRight size={20} />
           </Button>
           <Button
             variant="white"
@@ -123,7 +127,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
         </motion.div>
 
       </main>
-
+      
       {/* Feature Section - "A Quick Tour of What's Inside" */}
       <section id="events" className="relative z-10 py-20 px-4 md:px-8 max-w-7xl mx-auto">
         <motion.div
@@ -167,7 +171,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
       <footer className="bg-[#0f172a] text-white py-12 px-6 relative mt-20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-start gap-8">
           <div className="text-center md:text-left">
-            <h2 className="text-2xl font-bold">Youthopia</h2>
+            <h2 className="text-2xl font-bold">MPower Youthopia</h2>
             <p className="text-slate-400 mt-2 text-sm">Your space for mental wellness.</p>
           </div>
 
