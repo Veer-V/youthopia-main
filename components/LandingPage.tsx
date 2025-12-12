@@ -94,7 +94,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
           className="w-full max-w-3xl mx-auto mb-10 mix-blend-multiply"
         >
           <img
-            src="/image/youthopia final logo.jpg"
+            src="/image/youthopia final logo.png"
             alt="MPOWER Youthopia"
             className="w-full h-auto object-contain drop-shadow-xl"
           />
