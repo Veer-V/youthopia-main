@@ -63,7 +63,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
           transition={{ delay: 0.5, duration: 0.8 }}
           className="text-4xl md:text-5xl font-bold text-white tracking-widest uppercase mt-2 text-center drop-shadow-lg pb-6"
         >
-          Welcome
+          Welcome To
         </motion.h1>
 
         {/* Youthopia Logo */}
