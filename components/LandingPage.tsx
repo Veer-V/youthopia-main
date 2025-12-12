@@ -171,8 +171,8 @@ much happening here. And we hope you explore, experience, and enjoy them all!</h
       <footer className="bg-[#0f172a] text-white py-12 px-6 relative mt-20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-start gap-8">
           <div className="text-center md:text-left">
-            <h2 className="text-2xl font-bold">MPower Youthopia</h2>
-            <p className="text-slate-400 mt-2 text-sm">Your space for mental wellness.</p>
+            <h2 className="text-2xl font-bold">Mpower Youthopia</h2>
+            <p className="text-slate-400 mt-2 text-sm">Youth Mental Health Fest</p>
           </div>
 
           <div className="flex gap-6">
