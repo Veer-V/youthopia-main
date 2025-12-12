@@ -32,8 +32,8 @@ export const IMAGES = {
     debate: "../image/debate.jpg", // Corrected
     trashTheCan: "../image/trashthecan.png",
     mentalHealthQuiz: "../image/mentalhealthquiz.png",
-    mime :"mime.png",
-    comicflow :"comicflow.png"
+    mime :"../image/mime.png",
+    comicflow :"../image/comicflow.png"
 };
 
 export const events: EventData[] = [
