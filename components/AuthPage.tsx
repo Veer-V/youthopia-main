@@ -427,7 +427,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack, onLogin }) => {
                   </motion.div>
 
                   <Button type="button" onClick={() => onLogin({...formData, role: 'student'}, 5)} fullWidth variant="amber" shape="pill" className="text-lg font-bold py-4">
-                    Grab Your VISA
+                    Grab Your Mental Wellness Pass
                   </Button>
 
                    <div className="mt-8 text-center">
