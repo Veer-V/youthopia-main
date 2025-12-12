@@ -8,7 +8,7 @@ export const IMAGES = {
     art: "../image/",
     tech: "../image/deck.jpg",
     speaker: "../image/elocution.jpg",
-    writing: "../image/jpyofjournaling.png",
+    writing: "../image/writing.jpg",
     wellness: "https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&w=1000&q=80",
     fun: "../image/treasurehunt.jpg",
     fashion: "../image/fashionshow.jpg",
