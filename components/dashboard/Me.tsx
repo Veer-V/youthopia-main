@@ -74,7 +74,7 @@ const Me: React.FC<MeProps> = ({ bonus, user, registeredEventIds }) => {
                   <AnimatedCounter value={bonus} />
                </div>
                <div className="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">
-                  Total Points
+                  Mental Wellness Points
                </div>
             </motion.div>
          </div>
