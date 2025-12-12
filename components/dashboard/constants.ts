@@ -30,8 +30,8 @@ export const IMAGES = {
     mono: "../image/monoacting.jpg",
     trade: "../image/trade.jpg",
     debate: "../image/debate.jpg", // Corrected
-    trashthecan: "../image/trashthecan.png",
-    mentalhealthquiz: "../image/mentalhealthquiz.png"
+    trashTheCan: "../image/trashthecan.png",
+    mentalHealthQuiz: "../image/mentalhealthquiz.png"
 };
 
 export const events: EventData[] = [
