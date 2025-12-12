@@ -28,7 +28,8 @@ export const IMAGES = {
     folk: "../image/folkdance.jpg",
     soloclassical: "../image/solodance.jpg",
     mono: "../image/monoacting.jpg",
-    trade: "../image/trade.jpg"
+    trade: "../image/trade.jpg",
+    debate: "../image/debate.jpg"
   };
 
 export const events: EventData[] = [
@@ -443,7 +444,7 @@ export const events: EventData[] = [
       "Round 1: Individual team presentations.",
       "Round 2: Debates between teams"
     ],
-    image: IMAGES.speaker,
+    image: IMAGES.debate,
     isTeamEvent: true,
     minMembers: 2,
     maxMembers: 2,
