@@ -7,7 +7,7 @@ export const IMAGES = {
     theatre: "https://images.unsplash.com/photo-1503095392269-27528ca388ec?auto=format&fit=crop&w=1000&q=80",
     art: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&w=1000&q=80",
     tech: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1000&q=80",
-    speaker: "https://images.unsplash.com/photo-1475721027767-p05a6db14ba0?auto=format&fit=crop&w=1000&q=80",
+    speaker: "../image/elocution.jpg",
     writing: "../image/jpyofjournaling.png",
     wellness: "https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&w=1000&q=80",
     fun: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1000&q=80",
