@@ -26,7 +26,8 @@ export const IMAGES = {
     Knowyourconflict: "../image/Knowyourconflict.png",
     groupdance: "../image/groupdance.jpg",
     folk: "../image/folkdance.jpg",
-    soloclassical: "../image/solodance.jpg"
+    soloclassical: "../image/solodance.jpg",
+    mono: "../image/monoacting.jpg"
   };
 
 export const events: EventData[] = [
@@ -677,7 +678,7 @@ export const events: EventData[] = [
       "Any type of vulgarity and obscenity during the event leads to Disqualification and Negative Marking.",
       "Judge's decisions will be the final and binding."
     ],
-    image: IMAGES.theatre,
+    image: IMAGES.mono,
     points: 0
   },
   {
