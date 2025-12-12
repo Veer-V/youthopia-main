@@ -7,6 +7,7 @@ export const IMAGES = {
     theatre: "../image/skit.jpg",
     art: "../image/canvapainting.jpg",
     tech: "../image/deck.jpg",
+    digitalart: "../image/digitalart.jpg",
     speaker: "../image/elocution.jpg",
     writing: "../image/writing.jpg",
     wellness: "https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&w=1000&q=80",
@@ -373,7 +374,7 @@ export const events: EventData[] = [
       "Artwork must be exported as PNG/JPEG and named as EventName_CC.",
       "Judges' decisions are final and binding."
     ],
-    image: IMAGES.tech,
+    image: IMAGES.digitalart,
     points: 0
   },
   {
