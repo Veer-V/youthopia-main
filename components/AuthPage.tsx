@@ -307,7 +307,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack, onLogin }) => {
                           icon={<Layers size={18} />}
                           value={formData.stream}
                           onChange={handleInputChange}
-                          options={["Science", "Commerce", "Arts", "Vocational"]}
+                          options={["Science", "Commerce", "Arts", "Vocational", "Engineering","Others"]}
                           required
                         />
                     </div>
