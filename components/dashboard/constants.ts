@@ -23,7 +23,10 @@ export const IMAGES = {
     MHScore: "../image/MHScore.png",
     Zindaginamascreening: "../image/Zindaginamascreening.png",
     danceTherapy: "../image/danceTherapy.jpg",
-    Knowyourconflict: "../image/Knowyourconflict.png"
+    Knowyourconflict: "../image/Knowyourconflict.png",
+    groupdance: "../image/groupdance.jpg",
+    folkdance: "../image/folkdance.jpg",
+    solodance: "../image/solodance.jpg"
   };
 
 export const events: EventData[] = [
