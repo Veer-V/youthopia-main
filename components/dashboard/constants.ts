@@ -29,7 +29,9 @@ export const IMAGES = {
     soloclassical: "../image/solodance.jpg",
     mono: "../image/monoacting.jpg",
     trade: "../image/trade.jpg",
-    debate: "../image/debate.jpg"
+    debate: "../image/debate.jpg".
+    trashthecan: "../image/trashthecan.jpeg",
+    mentalhealthquiz: "../image/mentalhealthquiz.jpeg"
   };
 
 export const events: EventData[] = [
@@ -302,7 +304,7 @@ export const events: EventData[] = [
       "Get your score instantly.",
       "Learn about yourself."
     ],
-    image: IMAGES.wellness,
+    image: IMAGES.mentalhealthquiz,
     points: 20
   },
   {
@@ -770,7 +772,7 @@ export const events: EventData[] = [
       "Write it down.",
       "Throw it in the bin."
     ],
-    image: IMAGES.wellness,
+    image: IMAGES.trashthecan,
     points: 50
   },
   {
