@@ -304,7 +304,7 @@ export const events: EventData[] = [
       "Get your score instantly.",
       "Learn about yourself."
     ],
-    image: IMAGES.mentalhealthquiz,
+    image: IMAGES.mentalHealthQuiz,
     points: 20
   },
   {
@@ -772,7 +772,7 @@ export const events: EventData[] = [
       "Write it down.",
       "Throw it in the bin."
     ],
-    image: IMAGES.trashthecan,
+    image: IMAGES.trashTheCan,
     points: 50
   },
   {
