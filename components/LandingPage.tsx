@@ -99,7 +99,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
             className="w-full h-auto object-contain drop-shadow-xl"
           />
         </motion.div>
-        <h2 className="text-l md:text-2xl font-bold text-[#1e293b] text-center">Welcome to Youthopia, a one-of-a-kind Youth Mental Health Fest, buzzing with
+        <h2 className="text-l md:text-2xl font-bold text-[#1e293b] text-center">Welcome to <b>Youthopia</b>, a one-of-a-kind <b>Youth Mental Health Fest</b>, buzzing with
 excitement! From dance duels to memory games, from activities that test your
 strength to moments that help you take charge of your mental health, there’s so
 much happening here. And we hope you explore, experience, and enjoy them all!</h2>
