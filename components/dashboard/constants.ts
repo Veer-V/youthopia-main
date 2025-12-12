@@ -5,7 +5,7 @@ export const IMAGES = {
     dance: "../image/dancesolo.jpg",
     music: "../image/singing.jpg",
     theatre: "../image/skit.jpg",
-    art: "../image/",
+    art: "../image/canvapainting.jpg",
     tech: "../image/deck.jpg",
     speaker: "../image/elocution.jpg",
     writing: "../image/writing.jpg",
