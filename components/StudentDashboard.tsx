@@ -40,31 +40,55 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
   const [activeSection, setActiveSection] = useState<DashboardSection>('me');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Get user data from localStorage to ensure we have the latest backend data
+  const [currentUser, setCurrentUser] = React.useState<UserData | null>(user);
+
+  React.useEffect(() => {
+    // Sync with localStorage on mount and when user changes
+    const sessionData = localStorage.getItem('yth_session');
+    if (sessionData) {
+      try {
+        const parsedUser = JSON.parse(sessionData);
+        setCurrentUser(parsedUser);
+      } catch (e) {
+        console.error('Failed to parse session data', e);
+        setCurrentUser(user);
+      }
+    } else {
+      setCurrentUser(user);
+    }
+  }, [user]);
+
+  // Use actual user data from localStorage/backend
+  const userPoints = currentUser?.points || 0;
+  const userBonus = currentUser?.bonus || 0;
+  const totalScore = userPoints + userBonus;
+
   // Derived state from Context
-  const bonus = user ? getStudentBonus(user.email) : 0;
-  const registeredEventIds = (user && registrations[user.email]) ? registrations[user.email] : [];
+  const bonus = currentUser ? getStudentBonus(currentUser.email || '') : 0;
+  const registeredEventIds = (currentUser && registrations[currentUser.email || '']) ? registrations[currentUser.email || ''] : [];
 
   const handleRedeem = (cost: number) => {
-    if (user) {
-      updateUserBonus(user.email, -cost);
+    if (currentUser) {
+      updateUserBonus(currentUser.email || '', -cost);
     }
   };
 
   const handleAddBonus = (amount: number) => {
-    if (user) {
-      updateUserBonus(user.email, amount);
+    if (currentUser) {
+      updateUserBonus(currentUser.email || '', amount);
     }
   };
 
   const handleEventRegistration = (eventId: string) => {
-    if (user) {
-      registerForEvent(user.email, eventId);
+    if (currentUser) {
+      registerForEvent(currentUser.email || '', eventId);
     }
   };
 
   const handleSpinUsed = () => {
-    if (user) {
-      consumeSpin(user.email);
+    if (currentUser) {
+      consumeSpin(currentUser.email || '');
     }
   };
 
@@ -73,12 +97,12 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
   };
 
   const handleSpinFeedback = (rating: number, favoriteAspect: string, wouldRecommend: string, prizeAmount: number) => {
-    if (!user) return;
+    if (!currentUser) return;
 
     const feedback: SpinFeedbackResponse = {
       id: `spin_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      userEmail: user.email,
-      userName: user.name,
+      userEmail: currentUser.email || '',
+      userName: currentUser.name,
       timestamp: new Date().toLocaleString(),
       prizeAmount,
       rating,
@@ -96,7 +120,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
   }), [registeredEventIds, events]);
 
   // Spins are now granted by Admin based on sets of 4 events
-  const spinsAvailable = user?.spinsAvailable || 0;
+  const spinsAvailable = currentUser?.spinsAvailable || 0;
 
   const menuItems = [
     { id: 'me', label: 'Me', icon: <User size={20} /> },
@@ -119,36 +143,36 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
   const renderContent = () => {
     switch (activeSection) {
       case 'me':
-        return <Me bonus={bonus} user={user} registeredEventIds={registeredEventIds} />;
+        return <Me bonus={totalScore} user={currentUser} registeredEventIds={registeredEventIds} />;
       case 'activities':
-        return <Activities registeredEventIds={registeredEventIds} onRegister={handleEventRegistration} user={user} />;
+        return <Activities registeredEventIds={registeredEventIds} onRegister={handleEventRegistration} user={currentUser} />;
       case 'leaderboard':
-        return <Leaderboard bonus={bonus} />;
+        return <Leaderboard bonus={totalScore} />;
       case 'bonus':
         return (
           <Bonus
-            bonus={bonus}
+            bonus={totalScore}
             onAddBonus={handleAddBonus}
             spinsAvailable={spinsAvailable}
             eventsCount={engagementEventsRegistered.length}
             onSpinUsed={handleSpinUsed}
             onNavigateToRedeem={handleNavigateToRedeem}
-            userName={user?.name || 'Student'}
-            userEmail={user?.email || ''}
+            userName={currentUser?.name || 'Student'}
+            userEmail={currentUser?.email || ''}
             onSubmitFeedback={handleSpinFeedback}
           />
         );
       case 'redeem':
-        return <Redeem onRedeem={handleRedeem} userBonus={bonus} user={user} />;
+        return <Redeem onRedeem={handleRedeem} userBonus={totalScore} user={currentUser} />;
       case 'score':
-        return <Score bonus={bonus} registeredEventIds={registeredEventIds} />;
+        return <Score bonus={totalScore} registeredEventIds={registeredEventIds} userPoints={userPoints} userBonus={userBonus} />;
       case 'map':
         return <MapPage />;
       case 'help':
         return <Help />;
       default:
         // Pass transactions to "Me" or separate Points logic if it exists there
-        return <Me bonus={bonus} user={user} registeredEventIds={registeredEventIds} />;
+        return <Me bonus={totalScore} user={currentUser} registeredEventIds={registeredEventIds} />;
     }
   };
 

@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, Variants, useSpring, useTransform, animate, useMotionValue } from 'framer-motion';
-import { Award, User, Phone, Book, GraduationCap, Info, Sparkles, Mail } from 'lucide-react';
+import { Award, User, Phone, Book, GraduationCap, Info, Sparkles, Mail, Copy, Check } from 'lucide-react';
 import { UserData } from '../../types';
 
 interface MeProps {
@@ -23,6 +23,20 @@ const AnimatedCounter = ({ value }: { value: number }) => {
 };
 
 const Me: React.FC<MeProps> = ({ bonus, user, registeredEventIds }) => {
+   const [copiedYid, setCopiedYid] = useState(false);
+
+   const handleCopyYid = async () => {
+      if (user?.Yid) {
+         try {
+            await navigator.clipboard.writeText(user.Yid);
+            setCopiedYid(true);
+            setTimeout(() => setCopiedYid(false), 2000);
+         } catch (err) {
+            console.error('Failed to copy Yid:', err);
+         }
+      }
+   };
+
    const container: Variants = {
       hidden: { opacity: 0 },
       show: {
@@ -71,7 +85,7 @@ const Me: React.FC<MeProps> = ({ bonus, user, registeredEventIds }) => {
                </div>
                <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Current Balance</div>
                <div className="text-6xl font-black text-slate-900 mb-2">
-                  <AnimatedCounter value={bonus} />
+                  <AnimatedCounter value={userData.points} />
                </div>
                <div className="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">
                   Total Points
@@ -92,6 +106,26 @@ const Me: React.FC<MeProps> = ({ bonus, user, registeredEventIds }) => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors group relative">
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                     <Mail size={12} /> Yid
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                     <div className="font-bold text-slate-800 text-lg group-hover:text-brand-purple transition-colors truncate flex-1" title={userData.Yid}>
+                        {userData.Yid}
+                     </div>
+                     <button
+                        onClick={handleCopyYid}
+                        className={`p-2 rounded-lg transition-all ${copiedYid
+                           ? 'bg-green-100 text-green-600'
+                           : 'bg-slate-200 text-slate-600 hover:bg-brand-purple hover:text-white'
+                           }`}
+                        title={copiedYid ? 'Copied!' : 'Copy Yid'}
+                     >
+                        {copiedYid ? <Check size={16} /> : <Copy size={16} />}
+                     </button>
+                  </div>
+               </div>
                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors group">
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                      <Mail size={12} /> Email

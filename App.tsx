@@ -29,6 +29,34 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Auto-refresh user data every 15 minutes
+  React.useEffect(() => {
+    if (!user || !user.Yid) return;
+
+    const refreshUserData = async () => {
+      try {
+        const response = await fetch(`http://35.244.42.115:6001/user/data/${user.Yid}`);
+        if (response.ok) {
+          const updatedUser = await response.json();
+          // Update user state and localStorage with fresh data
+          setUser(updatedUser);
+          localStorage.setItem('yth_session', JSON.stringify(updatedUser));
+          console.log('User data refreshed from backend');
+        }
+      } catch (error) {
+        console.error('Failed to refresh user data:', error);
+      }
+    };
+
+    // Refresh immediately on mount
+    refreshUserData();
+
+    // Set up interval to refresh every 15 minutes (900000 ms)
+    const interval = setInterval(refreshUserData, 15 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, [user?.Yid]);
+
   const handleLogin = (userData?: UserData, bonus: number = 0) => {
     if (userData) {
       setUser(userData);

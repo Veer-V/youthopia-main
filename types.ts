@@ -4,31 +4,163 @@ export type ViewState = 'splash' | 'landing' | 'auth' | 'dashboard';
 
 export type AuthState = 'login' | 'register' | 'admin' | 'welcome';
 
+// User Types
 export interface UserData {
+  _id?: string;
+  Yid?: string;
   name: string;
-  email: string;
-  school: string;
+  email?: string;
+  institute: string;
+  mobile: number | string;
   class: string;
   stream: string;
-  phone: string;
-  age: string;
   gender: string;
-  adminId?: string;
+  age: number | string;
+  password?: string;
+  rollNumber?: string;
+  points?: number;
+  spinsAvailable?: number;
   role?: 'student' | 'admin' | 'executive';
   bonus?: number;
-  spinsAvailable?: number;
   bonusGrantCount?: number;
-  transactions?: Transaction[];
 }
 
+export interface RegisterUserData {
+  name: string;
+  email?: string;
+  institute: string;
+  mobile: number;
+  class: string;
+  stream: string;
+  gender: string;
+  age: number;
+  password: string;
+}
+
+export interface LoginUserData {
+  mobile: number;
+  password: string;
+}
+
+// Event Types
+export interface EventData {
+  _id?: string;
+  name: string;
+  description: string;
+  location: string;
+  participant_count: number;
+  completed: number;
+  points: number;
+  prizes: {
+    first: string;
+    second: string;
+    [key: string]: string;
+  };
+  schedule: {
+    start: string;
+    end: string;
+  };
+  images: string;
+  // Legacy fields for compatibility
+  id?: string;
+  title?: string;
+  date?: string;
+  time?: string;
+  loc?: string;
+  category?: string;
+  imageColor?: string;
+  quote?: string;
+  rules?: string[];
+  image?: string;
+  isTeamEvent?: boolean;
+  minMembers?: number;
+  maxMembers?: number;
+}
+
+export interface CreateEventData {
+  name: string;
+  description: string;
+  location: string;
+  participant_count: number;
+  completed: number;
+  points: number;
+  prizes: {
+    first: string;
+    second: string;
+    [key: string]: string;
+  };
+  schedule: {
+    start: string;
+    end: string;
+  };
+  images: string;
+}
+
+// Transaction Types
 export interface Transaction {
-  id: string;
-  type: 'credit' | 'debit';
-  amount: number;
-  reason: string;
-  timestamp: string;
+  _id?: string;
+  event: string;
+  user: {
+    id: string;
+    name: string;
+  };
+  points: number;
+  admin: string;
+  createdAt?: string;
+  // Legacy fields
+  id?: string;
+  type?: 'credit' | 'debit';
+  amount?: number;
+  reason?: string;
+  timestamp?: string;
 }
 
+export interface CreateTransactionData {
+  event: string;
+  user: {
+    id: string;
+    name: string;
+  };
+  points: number;
+  admin: string;
+}
+
+// Redemption Types
+export interface RedemptionData {
+  _id?: string;
+  name: string;
+  points: number;
+  transactions: {
+    [key: string]: string;
+  };
+}
+
+export interface CreateRedemptionData {
+  name: string;
+  points: number;
+  transactions: {
+    [key: string]: string;
+  };
+}
+
+export interface UserRedeemData {
+  item: string;
+  points: number;
+}
+
+// Leaderboard Types
+export interface LeaderboardEntry {
+  _id?: string;
+  name: string;
+  points: number;
+}
+
+export interface CreateLeaderboardData {
+  name: string;
+  points: number;
+}
+
+// Other Types
 export interface FeatureCardProps {
   title: string;
   description: string;
@@ -49,24 +181,6 @@ export enum Gender {
   PreferNotToSay = 'Prefer not to say'
 }
 
-export interface EventData {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  loc: string;
-  category: string;
-  imageColor: string;
-  quote: string;
-  description: string;
-  rules: string[];
-  image: string;
-  isTeamEvent?: boolean;
-  minMembers?: number;
-  maxMembers?: number;
-  points?: number;
-}
-
 export interface FeedbackItem {
   id: string;
   eventId: string;
@@ -83,7 +197,7 @@ export interface SpinFeedbackResponse {
   userName: string;
   timestamp: string;
   prizeAmount: number;
-  rating: number; // 1-5 stars
+  rating: number;
   favoriteAspect: 'Events' | 'Prizes' | 'Community' | 'Organization' | 'Other';
   wouldRecommend: 'Yes' | 'No' | 'Maybe';
 }

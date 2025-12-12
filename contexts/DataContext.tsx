@@ -1,10 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { UserData, EventData, FeedbackItem, SpinFeedbackResponse } from '../types';
-import { AuthController } from '../controllers/authController';
-import { EventController } from '../controllers/eventController';
-import { UserController } from '../controllers/userController';
-import { RedemptionController } from '../controllers/redemptionController';
-import { FeedbackController } from '../controllers/feedbackController';
+import * as API from '../services/apiService';
+
 
 export interface RedemptionRequest {
   id: string;
@@ -26,7 +23,7 @@ interface DataContextType {
 
   // Actions
   login: (email: string, password?: string) => Promise<{ user: UserData | null, error?: string }>;
-  addUser: (user: UserData, password?: string) => Promise<boolean>;
+  addUser: (user: UserData, password?: string) => Promise<{ success: boolean; user?: UserData; error?: string }>;
   updateUserBonus: (email: string, amount: number) => void;
   registerForEvent: (email: string, eventId: string) => void;
   markEventCompleted: (email: string, eventId: string) => void;
@@ -54,142 +51,320 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
   const [spinFeedbacks, setSpinFeedbacks] = useState<SpinFeedbackResponse[]>([]);
 
-  // Initial Data Fetch via Controllers
+  // Initial Data Fetch via API Service
   useEffect(() => {
     const fetchData = async () => {
-      const u = await UserController.getAll();
-      setUsers(u);
+      try {
+        // Transform event data from new API structure to legacy format
+        const transformEventData = (apiEvent: any): EventData => {
+          const startDate = apiEvent.schedule?.start ? new Date(apiEvent.schedule.start) : new Date();
 
-      const e = await EventController.getAll();
-      setEvents(e);
+          return {
+            // Legacy fields (for backward compatibility with Activities component)
+            id: apiEvent._id || apiEvent.id || '',
+            title: apiEvent.name || '',
+            date: startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) || '',
+            time: startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) || '',
+            loc: apiEvent.location || '',
+            category: apiEvent.category || 'General',
+            imageColor: 'from-purple-500 to-pink-500',
+            quote: apiEvent.description || 'Join us for an amazing event!',
+            description: apiEvent.description || '',
+            rules: apiEvent.rules || [],
+            image: apiEvent.images || apiEvent.image || '',
+            isTeamEvent: apiEvent.isTeamEvent || false,
+            minMembers: apiEvent.minMembers,
+            maxMembers: apiEvent.maxMembers,
+            points: apiEvent.points || 0,
 
-      const r = await EventController.getRegistrations();
-      setRegistrations(r);
+            // New API fields (keep for compatibility)
+            _id: apiEvent._id,
+            name: apiEvent.name,
+            location: apiEvent.location,
+            participant_count: apiEvent.participant_count,
+            completed: apiEvent.completed,
+            prizes: apiEvent.prizes,
+            schedule: apiEvent.schedule,
+            images: apiEvent.images
+          } as EventData;
+        };
 
-      const c = await EventController.getCompletedEvents();
-      setCompletedEvents(c);
+        const eventsResult = await API.getAllEvents();
+        // Transform events to match component expectations
+        const transformedEvents = (eventsResult.data || []).map(transformEventData);
+        setEvents(transformedEvents);
 
-      const red = await RedemptionController.getAll();
-      setRedemptions(red);
+        const feedbacksResult = await API.getAllFeedback();
+        setFeedbacks(feedbacksResult.data || []);
 
-      const f = await FeedbackController.getAll();
-      setFeedbacks(f);
+        const spinFeedbacksResult = await API.getAllSpinFeedback();
+        setSpinFeedbacks(spinFeedbacksResult.data || []);
 
-      const sf = await FeedbackController.getAllSpinFeedback();
-      setSpinFeedbacks(sf);
+        const redemptionsResult = await API.getAllRedemptions();
+        setRedemptions(redemptionsResult.data || []);
+      } catch (error) {
+        console.error('Error fetching initial data:', error);
+      }
     };
 
     fetchData(); // Initial fetch
 
-    // Poll for updates every 2 seconds for near real-time feel
+    // Poll for updates every 5 seconds
     const interval = setInterval(() => {
       fetchData();
-    }, 2000);
-
-    // Listen for cross-tab updates (e.g. another user/admin doing something in a different tab)
-    const handleStorageChange = () => {
-      fetchData();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
+    }, 5000);
 
     return () => {
       clearInterval(interval);
-      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
   // --- Auth & User Actions ---
 
-  const login = async (email: string, password?: string) => {
-    return await AuthController.login(email, password);
+  const login = async (emailOrMobile: string | number, password?: string) => {
+    try {
+      // Check if this is an admin/executive login (email-based)
+      const identifier = typeof emailOrMobile === 'string' ? emailOrMobile : emailOrMobile.toString();
+
+      // Admin/Executive login (hardcoded credentials since backend doesn't support admin login)
+      if (identifier.includes('@') || identifier.toLowerCase().includes('admin') || identifier.toLowerCase().includes('executive')) {
+        const email = identifier.toLowerCase();
+
+        // Define admin credentials
+        const adminCredentials = {
+          'admin@youthopia.com': { password: 'admin123', role: 'admin' as const },
+          'executive@youthopia.com': { password: 'exec123', role: 'executive' as const }
+        };
+
+        // Check if email exists in admin credentials
+        const adminCred = adminCredentials[email as keyof typeof adminCredentials];
+
+        if (!adminCred) {
+          return { user: null, error: 'Invalid admin credentials' };
+        }
+
+        // Validate password
+        if (password !== adminCred.password) {
+          return { user: null, error: 'Invalid password' };
+        }
+
+        // Return admin/executive user data
+        const adminUser: UserData = {
+          name: adminCred.role === 'admin' ? 'Admin' : 'Executive',
+          email: email,
+          role: adminCred.role,
+          mobile: 0,
+          institute: 'Youthopia',
+          class: '',
+          stream: '',
+          age: 0,
+          gender: '',
+          points: 0,
+          bonus: 0,
+          Yid: adminCred.role === 'admin' ? 'ADMIN001' : 'EXEC001'
+        };
+
+        return { user: adminUser, error: undefined };
+      }
+
+      // Student login (mobile-based via API)
+      const mobileNumber = typeof emailOrMobile === 'string' ? parseInt(emailOrMobile) : emailOrMobile;
+
+      // Validate mobile number
+      if (isNaN(mobileNumber) || mobileNumber <= 0) {
+        return { user: null, error: 'Invalid mobile number format' };
+      }
+
+      const result = await API.loginUser({
+        mobile: mobileNumber,
+        password: password || ''
+      });
+
+      if (result.data) {
+        return { user: result.data as UserData, error: undefined };
+      }
+      return { user: null, error: result.error || 'Login failed' };
+    } catch (error: any) {
+      console.error('Login error:', error);
+      return { user: null, error: error.message || 'Login failed' };
+    }
   };
 
   const addUser = async (user: UserData, password?: string) => {
-    const result = await AuthController.register(user, password);
-    if (result.success) {
-      // Refresh local state from Source of Truth
-      const updatedUsers = await UserController.getAll();
-      setUsers(updatedUsers);
-      return true;
+    try {
+      const result = await API.registerUser({
+        name: user.name,
+        email: user.email,
+        institute: user.institute || '',
+        mobile: typeof user.mobile === 'string' ? parseInt(user.mobile) : user.mobile,
+        class: user.class || '',
+        stream: user.stream || '',
+        gender: user.gender || '',
+        age: typeof user.age === 'string' ? parseInt(user.age) : user.age,
+        password: password || '',
+        // Note: points are assigned automatically by the backend
+      });
+      if (result.data) {
+        const userData = result.data as UserData;
+        setUsers([...users, userData]);
+        return { success: true, user: userData }; // Return the user data from API
+      }
+      // Return the error from API
+      return { success: false, error: result.error || 'Registration failed' };
+    } catch (error: any) {
+      console.error('Error adding user:', error);
+      return { success: false, error: error.message || 'Registration failed' };
     }
-    return false;
   };
 
-  const updateUserBonus = async (email: string, amount: number) => {
-    const updatedList = await UserController.updateBonus(email, amount);
-    setUsers(updatedList);
+  const updateUserBonus = (identifier: string, amount: number) => {
+    try {
+      const updatedUsers = users.map(u =>
+        (u.rollNumber === identifier || u.mobile?.toString() === identifier)
+          ? { ...u, bonus: (u.bonus || 0) + amount }
+          : u
+      );
+      setUsers(updatedUsers);
+    } catch (error) {
+      console.error('Error updating user bonus:', error);
+    }
   };
 
-  const deleteUser = async (id: string) => {
-    const updatedList = await UserController.delete(id);
-    setUsers(updatedList);
+  const deleteUser = (id: string) => {
+    try {
+      const updatedUsers = users.filter(u =>
+        u.rollNumber !== id && u.mobile?.toString() !== id && u._id !== id
+      );
+      setUsers(updatedUsers);
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
   };
 
-  const grantEventBonus = async (email: string, bonusAmount: number) => {
-    const updatedList = await UserController.grantEventBonus(email, bonusAmount);
-    setUsers(updatedList);
+  const grantEventBonus = (identifier: string, bonusAmount: number) => {
+    try {
+      const updatedUsers = users.map(u =>
+        (u.rollNumber === identifier || u.mobile?.toString() === identifier)
+          ? { ...u, bonus: (u.bonus || 0) + bonusAmount, spinsAvailable: (u.spinsAvailable || 0) + 1 }
+          : u
+      );
+      setUsers(updatedUsers);
+    } catch (error) {
+      console.error('Error granting event bonus:', error);
+    }
   };
 
-  const consumeSpin = async (email: string) => {
-    const updatedList = await UserController.consumeSpin(email);
-    setUsers(updatedList);
+  const consumeSpin = (identifier: string) => {
+    try {
+      const updatedUsers = users.map(u =>
+        (u.rollNumber === identifier || u.mobile?.toString() === identifier)
+          ? { ...u, spinsAvailable: Math.max(0, (u.spinsAvailable || 0) - 1) }
+          : u
+      );
+      setUsers(updatedUsers);
+    } catch (error) {
+      console.error('Error consuming spin:', error);
+    }
   };
 
   // --- Event Actions ---
 
-  const addEvent = async (event: EventData) => {
-    const updatedList = await EventController.create(event);
-    setEvents(updatedList);
+  const addEvent = (event: EventData) => {
+    try {
+      setEvents([...events, event]);
+    } catch (error) {
+      console.error('Error adding event:', error);
+    }
   };
 
-  const updateEvent = async (event: EventData) => {
-    const updatedList = await EventController.update(event);
-    setEvents(updatedList);
+  const updateEvent = (event: EventData) => {
+    try {
+      const eventId = event._id || event.id;
+      const updatedList = events.map(e =>
+        (e._id === eventId || e.id === eventId) ? event : e
+      );
+      setEvents(updatedList);
+    } catch (error) {
+      console.error('Error updating event:', error);
+    }
   };
 
-  const deleteEvent = async (id: string) => {
-    const updatedList = await EventController.delete(id);
-    setEvents(updatedList);
+  const deleteEvent = (id: string) => {
+    try {
+      const updatedList = events.filter(e => e._id !== id && e.id !== id);
+      setEvents(updatedList);
+    } catch (error) {
+      console.error('Error deleting event:', error);
+    }
   };
 
-  const registerForEvent = async (email: string, eventId: string) => {
-    const updatedRegs = await EventController.registerUser(email, eventId);
-    setRegistrations(updatedRegs);
+  const registerForEvent = (email: string, eventId: string) => {
+    try {
+      const userRegs = registrations[email] || [];
+      if (!userRegs.includes(eventId)) {
+        const updatedRegs = { ...registrations, [email]: [...userRegs, eventId] };
+        setRegistrations(updatedRegs);
+      }
+    } catch (error) {
+      console.error('Error registering for event:', error);
+    }
   };
 
-  const markEventCompleted = async (email: string, eventId: string) => {
-    const updatedCompleted = await EventController.markCompleted(email, eventId);
-    setCompletedEvents(updatedCompleted);
+  const markEventCompleted = (email: string, eventId: string) => {
+    try {
+      const userCompleted = completedEvents[email] || [];
+      if (!userCompleted.includes(eventId)) {
+        const updatedCompleted = { ...completedEvents, [email]: [...userCompleted, eventId] };
+        setCompletedEvents(updatedCompleted);
+      }
+    } catch (error) {
+      console.error('Error marking event completed:', error);
+    }
   };
 
   // --- Redemption Actions ---
 
-  const addRedemption = async (req: RedemptionRequest) => {
-    const updatedList = await RedemptionController.create(req);
-    setRedemptions(updatedList);
+  const addRedemption = (req: RedemptionRequest) => {
+    try {
+      setRedemptions([...redemptions, req]);
+    } catch (error) {
+      console.error('Error adding redemption:', error);
+    }
   };
 
-  const processRedemption = async (id: string, status: 'Approved' | 'Rejected') => {
-    const updatedList = await RedemptionController.process(id, status);
-    setRedemptions(updatedList);
+  const processRedemption = (id: string, status: 'Approved' | 'Rejected') => {
+    try {
+      const updatedList = redemptions.map(r => r.id === id ? { ...r, status } : r);
+      setRedemptions(updatedList);
+    } catch (error) {
+      console.error('Error processing redemption:', error);
+    }
   };
 
   // --- Feedback Actions ---
-  const addFeedback = async (feedback: FeedbackItem) => {
-    const updatedList = await FeedbackController.add(feedback);
-    setFeedbacks(updatedList);
+
+  const addFeedback = (feedback: FeedbackItem) => {
+    try {
+      setFeedbacks([...feedbacks, feedback]);
+    } catch (error) {
+      console.error('Error adding feedback:', error);
+    }
   };
 
-  const addSpinFeedback = async (feedback: SpinFeedbackResponse) => {
-    const updatedList = await FeedbackController.addSpinFeedback(feedback);
-    setSpinFeedbacks(updatedList);
+  const addSpinFeedback = (feedback: SpinFeedbackResponse) => {
+    try {
+      setSpinFeedbacks([...spinFeedbacks, feedback]);
+    } catch (error) {
+      console.error('Error adding spin feedback:', error);
+    }
   };
 
   // --- Helpers ---
 
-  const getStudentBonus = (email: string) => {
-    const user = users.find(u => u.email === email);
+  const getStudentBonus = (identifier: string) => {
+    const user = users.find(u =>
+      u.rollNumber === identifier || u.mobile?.toString() === identifier
+    );
     return user?.bonus || 0;
   };
 
@@ -226,7 +401,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 export const useData = () => {
   const context = useContext(DataContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useData must be used within a DataProvider');
   }
   return context;

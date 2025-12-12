@@ -100,9 +100,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigateAuth, onFeatureClic
           />
         </motion.div>
         <h2 className="text-l md:text-2xl font-bold text-[#1e293b] text-center">Welcome to Youthopia, a one-of-a-kind Youth Mental Health Fest, buzzing with
-excitement! From dance duels to memory games, from activities that test your
-strength to moments that help you take charge of your mental health, there’s so
-much happening here. And we hope you explore, experience, and enjoy them all!</h2>
+          excitement! From dance duels to memory games, from activities that test your
+          strength to moments that help you take charge of your mental health, there’s so
+          much happening here. And we hope you explore, experience, and enjoy them all!</h2>
 
         {/* Call to Actions */}
         <motion.div
@@ -127,7 +127,7 @@ much happening here. And we hope you explore, experience, and enjoy them all!</h
         </motion.div>
 
       </main>
-      
+
       {/* Feature Section - "A Quick Tour of What's Inside" */}
       <section id="events" className="relative z-10 py-20 px-4 md:px-8 max-w-7xl mx-auto">
         <motion.div
@@ -171,8 +171,8 @@ much happening here. And we hope you explore, experience, and enjoy them all!</h
       <footer className="bg-[#0f172a] text-white py-12 px-6 relative mt-20">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center md:items-start gap-8">
           <div className="text-center md:text-left">
-            <h2 className="text-2xl font-bold">MPower Youthopia</h2>
-            <p className="text-slate-400 mt-2 text-sm">Your space for mental wellness.</p>
+            <h2 className="text-2xl font-bold">Mpower Youthopia</h2>
+            <p className="text-slate-400 mt-2 text-sm">Youth Mental Health Fest</p>
           </div>
 
           <div className="flex gap-6">
