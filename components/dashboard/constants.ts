@@ -25,8 +25,8 @@ export const IMAGES = {
     danceTherapy: "../image/danceTherapy.jpg",
     Knowyourconflict: "../image/Knowyourconflict.png",
     groupdance: "../image/groupdance.jpg",
-    folkdance: "../image/folkdance.jpg",
-    solodance: "../image/solodance.jpg"
+    folk: "../image/folkdance.jpg",
+    soloclassical: "../image/solodance.jpg"
   };
 
 export const events: EventData[] = [
@@ -492,7 +492,7 @@ export const events: EventData[] = [
       "In case of a tie, a group dance battle will be conducted as a tie-breaker.",
       "Direct Finale and All dance forms except classical and folk."
     ],
-    image: IMAGES.dance,
+    image: IMAGES.groupdance,
     isTeamEvent: true,
     minMembers: 6,
     maxMembers: 10,
@@ -517,7 +517,7 @@ export const events: EventData[] = [
       "Any sort of vulgarity/profanity/obscenity will lead to disqualification and negative PR points.",
       "Judge's decision will be final and binding."
     ],
-    image: IMAGES.dance,
+    image: IMAGES.folk,
     isTeamEvent: true,
     minMembers: 6,
     maxMembers: 10,
@@ -584,7 +584,7 @@ export const events: EventData[] = [
       "Any form of vulgarity, profanity, or obscenity will lead to disqualification.",
       "The judges' decisions are final and binding."
     ],
-    image: IMAGES.dance,
+    image: IMAGES.soloclassical,
     points: 0
   },
   {
