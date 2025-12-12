@@ -84,7 +84,7 @@ const Me: React.FC<MeProps> = ({ bonus, user, registeredEventIds }) => {
             <div className="flex items-center justify-between mb-6">
                <h3 className="font-bold text-lg flex items-center gap-2 text-slate-800">
                   <div className="p-2 bg-slate-100 rounded-lg text-slate-600"><User size={20} /></div>
-                  Student Profile
+                  My Profile
                </h3>
                <span className="text-xs font-bold text-green-600 bg-green-100 px-3 py-1 rounded-full border border-green-200">
                   Verified
