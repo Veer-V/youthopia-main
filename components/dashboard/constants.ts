@@ -27,7 +27,8 @@ export const IMAGES = {
     groupdance: "../image/groupdance.jpg",
     folk: "../image/folkdance.jpg",
     soloclassical: "../image/solodance.jpg",
-    mono: "../image/monoacting.jpg"
+    mono: "../image/monoacting.jpg",
+    trade: "../image/trade.jpg"
   };
 
 export const events: EventData[] = [
@@ -468,7 +469,7 @@ export const events: EventData[] = [
       "Any use of vulgarity or obscenity during the event will lead to disqualification and negative marking.",
       "Judges' decisions are final and binding."
     ],
-    image: IMAGES.tech,
+    image: IMAGES.trade,
     isTeamEvent: true,
     minMembers: 2,
     maxMembers: 2,
