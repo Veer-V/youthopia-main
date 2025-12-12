@@ -94,6 +94,14 @@ const Me: React.FC<MeProps> = ({ bonus, user, registeredEventIds }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors group">
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                      Yid
+                  </div>
+                  <div className="font-bold text-slate-800 text-lg group-hover:text-brand-purple transition-colors truncate" title={userData.email}>
+                     16AC0D
+                  </div>
+               </div>
+               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors group">
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
                      <Mail size={12} /> Email
                   </div>
                   <div className="font-bold text-slate-800 text-lg group-hover:text-brand-purple transition-colors truncate" title={userData.email}>
