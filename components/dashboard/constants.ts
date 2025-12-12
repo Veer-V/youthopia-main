@@ -31,7 +31,9 @@ export const IMAGES = {
     trade: "../image/trade.jpg",
     debate: "../image/debate.jpg", // Corrected
     trashTheCan: "../image/trashthecan.png",
-    mentalHealthQuiz: "../image/mentalhealthquiz.png"
+    mentalHealthQuiz: "../image/mentalhealthquiz.png",
+    mime :"mime.png",
+    comicflow :"comicflow.png"
 };
 
 export const events: EventData[] = [
@@ -231,7 +233,7 @@ export const events: EventData[] = [
       "Reference material is not permitted.",
       "Judges' decisions are final and binding."
     ],
-    image: IMAGES.art,
+    image: IMAGES.comicflow,
     points: 0
   },
   {
@@ -361,7 +363,7 @@ export const events: EventData[] = [
       "Any type of vulgarity and obscenity during the event leads to Disqualification and Negative Marking.",
       "Judge's decisions will be the final and binding."
     ],
-    image: IMAGES.theatre,
+    image: IMAGES.mime,
     points: 0
   },
   {
