@@ -3,7 +3,7 @@ import { EventData } from '../../types';
 
 export const IMAGES = {
     dance: "https://images.unsplash.com/photo-1545959588-8cdb924d7db6?auto=format&fit=crop&w=1000&q=80",
-    music: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1000&q=80",
+    music: "../image/singing.jpg",
     theatre: "https://images.unsplash.com/photo-1503095392269-27528ca388ec?auto=format&fit=crop&w=1000&q=80",
     art: "https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&w=1000&q=80",
     tech: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1000&q=80",
