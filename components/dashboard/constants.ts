@@ -29,10 +29,10 @@ export const IMAGES = {
     soloclassical: "../image/solodance.jpg",
     mono: "../image/monoacting.jpg",
     trade: "../image/trade.jpg",
-    debate: "../image/debate.jpg",
-    trashTheCan: "../image/trashthecan.png", 
-    mentalHealthQuiz: "../image/mentalhealthquiz.png"
-  };
+    debate: "../image/debate.jpg", // Corrected
+    trashthecan: "../image/trashthecan.png",
+    mentalhealthquiz: "../image/mentalhealthquiz.png"
+};
 
 export const events: EventData[] = [
   {
