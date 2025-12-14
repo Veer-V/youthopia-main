@@ -1,30 +1,58 @@
-
 import { FeedbackItem, SpinFeedbackResponse } from '../types';
-import { DB } from './db';
-
-const FEEDBACK_KEY = 'yth_feedbacks';
-const SPIN_FEEDBACK_KEY = 'yth_spin_feedbacks';
+import { apiClient } from './apiClient';
 
 export const FeedbackController = {
   getAll: async (): Promise<FeedbackItem[]> => {
-    return DB.read<FeedbackItem[]>(FEEDBACK_KEY, []);
-  },
-
-  add: async (feedback: FeedbackItem): Promise<FeedbackItem[]> => {
-    const list = DB.read<FeedbackItem[]>(FEEDBACK_KEY, []);
-    const newList = [feedback, ...list];
-    DB.write(FEEDBACK_KEY, newList);
-    return newList;
+    try {
+      const data = await apiClient.get('/feedback/event');
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error("Get Event Feedback Error", e);
+      return [];
+    }
   },
 
   getAllSpinFeedback: async (): Promise<SpinFeedbackResponse[]> => {
-    return DB.read<SpinFeedbackResponse[]>(SPIN_FEEDBACK_KEY, []);
+    try {
+      const data = await apiClient.get('/feedback/spin');
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      console.error("Get Spin Feedback Error", e);
+      return [];
+    }
+  },
+
+  add: async (feedback: FeedbackItem): Promise<FeedbackItem[]> => {
+    try {
+      const payload = {
+        eventId: feedback.eventId,
+        eventName: feedback.eventName,
+        userEmail: feedback.userEmail,
+        userName: feedback.userName,
+        emoji: feedback.emoji
+        // comment optional if added to type later
+      };
+      await apiClient.post('/feedback/event', payload);
+    } catch (e) {
+      console.error("Add Event Feedback Error", e);
+    }
+    return await FeedbackController.getAll();
   },
 
   addSpinFeedback: async (feedback: SpinFeedbackResponse): Promise<SpinFeedbackResponse[]> => {
-    const list = DB.read<SpinFeedbackResponse[]>(SPIN_FEEDBACK_KEY, []);
-    const newList = [feedback, ...list];
-    DB.write(SPIN_FEEDBACK_KEY, newList);
-    return newList;
+    try {
+      const payload = {
+        userEmail: feedback.userEmail,
+        userName: feedback.userName,
+        prizeAmount: feedback.prizeAmount,
+        rating: feedback.rating,
+        favoriteAspect: feedback.favoriteAspect,
+        wouldRecommend: feedback.wouldRecommend
+      };
+      await apiClient.post('/feedback/spin', payload);
+    } catch (e) {
+      console.error("Add Spin Feedback Error", e);
+    }
+    return await FeedbackController.getAllSpinFeedback();
   }
 };

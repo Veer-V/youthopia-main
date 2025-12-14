@@ -9,9 +9,14 @@ import AdminDashboard from './components/AdminDashboard';
 import ExecutiveDashboard from './components/ExecutiveDashboard';
 import { ViewState, UserData } from './types';
 
+import { useData } from './contexts/DataContext';
+
+import { UserController } from './controllers/userController';
+
 const App: React.FC = () => {
+  const { user, setUser } = useData();
+  const { isInitializing } = useData();
   const [currentView, setCurrentView] = useState<ViewState>('splash');
-  const [user, setUser] = useState<UserData | null>(null);
   const [initialBonus, setInitialBonus] = useState(0);
 
   // Check for session persistence
@@ -28,6 +33,38 @@ const App: React.FC = () => {
       }
     }
   }, []);
+
+  // Poll for updates via API to ensure 'user' is always fresh in App scope
+  React.useEffect(() => {
+    if (!user) return;
+
+    const fetchLatestUserData = async () => {
+      // Prefer Yid, fallback to id, fallback to _id
+      const targetId = user.Yid || user.id || user._id;
+      if (targetId) {
+        try {
+          const fresh = await UserController.getUserData(targetId);
+          if (fresh) {
+            setUser(prev => {
+              // Prevent loops by checking equality
+              if (JSON.stringify(prev) !== JSON.stringify(fresh)) {
+                localStorage.setItem('yth_session', JSON.stringify(fresh));
+                return fresh;
+              }
+              return prev;
+            });
+          }
+        } catch (err) {
+          console.error("Error polling user data:", err);
+        }
+      }
+    };
+
+    fetchLatestUserData(); // Run immediately on mount/user change
+    const interval = setInterval(fetchLatestUserData, 2000); // Continuous fetching every 2s
+
+    return () => clearInterval(interval);
+  }, [user?.Yid || user?.id || '']);
 
   const handleLogin = (userData?: UserData, bonus: number = 0) => {
     if (userData) {
@@ -48,7 +85,18 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (currentView) {
       case 'splash':
-        return <SplashScreen onComplete={() => setCurrentView('landing')} />;
+        return (
+          <motion.div
+            key="splash"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <SplashScreen onComplete={() => {
+              setCurrentView('landing');
+            }} />
+          </motion.div>
+        );
       case 'landing':
         return (
           <motion.div
@@ -125,6 +173,8 @@ const App: React.FC = () => {
       <AnimatePresence mode="wait">
         {renderView()}
       </AnimatePresence>
+      {/* Global loader overlay when data is initializing after login */}
+
     </div>
   );
 };

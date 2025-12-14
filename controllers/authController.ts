@@ -1,82 +1,110 @@
 
 import { UserData } from '../types';
-import { DB } from './db';
-
-const USERS_KEY = 'yth_users';
+import { apiClient } from './apiClient';
 
 export const AuthController = {
   login: async (email: string, password?: string): Promise<{ user: UserData | null, error?: string }> => {
-    // Artificial delay removed for speed
-    
-    // 1. Static Admin/Executive Check
-    if (email === 'admin@youthopia.com' && password === '123456') {
-        return { user: { name: "System Admin", email, role: 'admin', school: 'System', class: 'N/A', stream: 'N/A', phone: 'N/A', age: 'N/A', gender: 'Other' } as UserData };
-    }
-    if (email === 'executive@youthopia.com' && password === '789') {
-        return { user: { name: "Executive Director", email, role: 'executive', school: 'Board', class: 'N/A', stream: 'N/A', phone: 'N/A', age: 'N/A', gender: 'Other' } as UserData };
-    }
+    try {
+      // API expects mobile.
+      const mobile = Number(email);
+      if (isNaN(mobile)) {
+        // If it's not a number, we can't login with the current API spec which requires 'mobile'
+        return { user: null, error: 'Login requires a valid mobile number' };
+      }
 
-    // 2. Custom Student Credential Check (Phone/Email)
-    // Supports login via phone "9321549715" or email "aditya@youthopia.com" with password "Aditya@27"
-    if ((email === '9321549715' || email.toLowerCase() === 'aditya@youthopia.com') && password === 'Aditya@27') {
-        const hardcodedUser: UserData = { 
-            name: "Aditya", 
-            email: "aditya@youthopia.com", // Normalized email
-            phone: "9321549715",
-            role: 'student', 
-            school: 'Youthopia High', 
-            class: '12', 
-            stream: 'Science', 
-            age: '18', 
-            gender: 'Male',
-            bonus: 0 // Clean data default
-        };
+      const response = await apiClient.post('/user/login', {
+        mobile,
+        password
+      });
 
-        // Ensure user exists in DB so points/registrations work properly across reloads
-        const users = DB.read<UserData[]>(USERS_KEY, []);
-        const existingUser = users.find(u => u.phone === '9321549715' || u.email === 'aditya@youthopia.com');
-        
-        if (!existingUser) {
-            // First time login for this specific user, seed clean data
-            DB.write(USERS_KEY, [...users, hardcodedUser]);
-            return { user: hardcodedUser };
-        } else {
-             // Return existing persisted user state
-             return { user: existingUser };
+      if (!response) {
+        return { user: null, error: 'User not found' };
+      }
+
+      // Map API response to UserData
+      // Response might vary, adapting as best as possible
+      const mappedUser: UserData = {
+        ...response, // Persist all API fields
+        id: response._id || response.id,
+        Yid: response.Yid || response.id || response._id,
+        name: response.name,
+        email: response.email,
+        phone: response.mobile?.toString() || response.phone,
+        institute: response.institute,
+        stream: response.stream,
+        class: response.class,
+        gender: response.gender,
+        age: response.age?.toString(),
+        role: 'student', // Default
+        // bonus: response.points || 0, // Removed at user request
+        spinsAvailable: response.spinsAvailable || 0
+      };
+
+      // Fetch points if ID is available
+      if (mappedUser.id) {
+        try {
+          // Link: (get) http://35.244.42.115:6001/user/points/161C03
+          const pointsData = await apiClient.get(`/user/points/${mappedUser.id}`);
+          if (pointsData && typeof pointsData.points === 'number') {
+            // mappedUser.bonus = pointsData.points;
+            mappedUser.points = pointsData.points;
+          }
+        } catch (e) {
+          console.warn("Could not fetch user points", e);
         }
+      }
+
+      return { user: mappedUser };
+    } catch (e: any) {
+      console.error("Login Error", e);
+      return { user: null, error: e.message || 'Login failed' };
     }
-
-    // 3. Check Database
-    // Note: For this local simulation, we look up the specific user key where password is stored
-    const legacyKey = `user_${email.toLowerCase()}`;
-    const storedUser = DB.read<any>(legacyKey, null);
-
-    if (storedUser && storedUser.password === password) {
-        // Return sanitized user object (remove password in real app)
-        return { user: storedUser };
-    }
-
-    return { user: null, error: 'Invalid email/phone or password' };
   },
 
-  register: async (userData: UserData, password?: string): Promise<{ success: boolean, error?: string }> => {
-    // Artificial delay removed for speed
-    
-    const users = DB.read<UserData[]>(USERS_KEY, []);
-    
-    if (users.find(u => u.email === userData.email)) {
-      return { success: false, error: 'User already exists' };
+  register: async (userData: UserData, password?: string): Promise<{ success: boolean, user?: UserData, error?: string }> => {
+    try {
+      if (!password) {
+        return { success: false, error: 'Password is required' };
+      }
+
+      const payload = {
+        name: userData.name,
+        institute: userData.institute,
+        email: userData.email,
+        mobile: Number(userData.phone),
+        class: userData.class,
+        stream: userData.stream,
+        gender: userData.gender,
+        age: Number(userData.age),
+        password: password
+      };
+
+      const response = await apiClient.post('/user/register', payload);
+
+      // Attempt to map response to UserData if it returns the object
+      let createdUser: UserData | undefined;
+      if (response && (response.id || response._id)) {
+        createdUser = {
+          ...response, // Persist all API fields
+          id: response._id || response.id,
+          Yid: response.Yid || response.id || response._id,
+          name: response.name || userData.name,
+          email: response.email || userData.email,
+          phone: response.mobile?.toString() || userData.phone,
+          institute: response.institute || userData.institute,
+          stream: response.stream || userData.stream,
+          class: response.class || userData.class,
+          gender: response.gender || userData.gender,
+          age: response.age?.toString() || userData.age,
+          role: 'student',
+          bonus: 5
+        };
+      }
+
+      return { success: true, user: createdUser };
+    } catch (e: any) {
+      console.error("Register Error", e);
+      return { success: false, error: e.message || 'Registration failed' };
     }
-
-    // 1. Add to global registry
-    const updatedUsers = [...users, { ...userData, bonus: userData.bonus || 0 }];
-    DB.write(USERS_KEY, updatedUsers);
-
-    // 2. Create individual record (Simulating Auth Table with Password)
-    if (password) {
-        DB.write(`user_${userData.email.toLowerCase()}`, { ...userData, password });
-    }
-
-    return { success: true };
   }
 };

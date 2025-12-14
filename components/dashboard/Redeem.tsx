@@ -11,6 +11,7 @@ interface RedeemItem {
   cost: number;
   emoji?: string;
   image?: string;
+  _id?: string;
 }
 
 interface RedeemProps {
@@ -20,7 +21,7 @@ interface RedeemProps {
 }
 
 const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
-  const { addRedemption, redemptions } = useData();
+  const { addRedemption, claimRedemption, redemptions } = useData();
   const [selectedItem, setSelectedItem] = useState<RedeemItem | null>(null);
   const [redeemStatus, setRedeemStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
@@ -35,10 +36,10 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
   }, [toast]);
 
   const items: RedeemItem[] = [
-    { name: 'Diary', cost: 750, image: '/image/diary.png' },
-    { name: 'Sipper', cost: 550, image: '/image/sipper.png' },
-    { name: 'Keychain', cost: 350, image: '/image/keychain.png' },
-    { name: 'Badge', cost: 150, image: '/image/badge.png' },
+    { name: 'Diary', cost: 750, image: '/image/diary.png', _id: "693e7b4c47c3a159b04db138" },
+    { name: 'Sipper', cost: 550, image: '/image/sipper.png', _id: "693ea07fbe44c513834f77b5" },
+    { name: 'Keychain', cost: 350, image: '/image/keychain.png', _id: "693ea20ca1825e0de8d94c2f" },
+    { name: 'Badge', cost: 150, image: '/image/badge.png', _id: "693ea2894e50bc7eb4baf4f4" },
   ];
 
   const handleConfirm = () => {
@@ -52,14 +53,24 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
         onRedeem(selectedItem.cost);
 
         // Add request to shared context
+        // Use User Yid for claiming
+        claimRedemption(user.Yid || user.id || '', selectedItem._id || '');
+
+        // Optimistic update if needed, but claimRedemption re-fetches list
+        // We keep local 'addRedemption' for compatibility if needed, 
+        // but explicit request was "Use THIS to redeem"
+
+        /* 
         addRedemption({
           id: `RED-${Math.floor(Math.random() * 10000)}`,
           user: user.name,
+          userId: user.id, // Pass explicit ID
           item: selectedItem.name,
           cost: selectedItem.cost,
           status: 'Pending',
           time: new Date().toLocaleTimeString()
         });
+        */
 
         setRedeemStatus('success');
 
@@ -98,7 +109,7 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-3xl font-bold">Redeem Bonus</h2>
         <div className="bg-brand-yellow/10 text-brand-orange font-bold px-4 py-2 rounded-full text-sm">
-          Balance: {userBonus} Bonus
+          Balance: {user?.points} points
         </div>
       </div>
 
@@ -133,7 +144,7 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
                 )}
               </motion.div>
               <h3 className="font-bold text-slate-800 text-sm mb-1">{item.name}</h3>
-              <div className={`font-bold text-sm mb-3 ${canAfford ? 'text-brand-purple' : 'text-slate-400'}`}>{item.cost} Bonus</div>
+              <div className={`font-bold text-sm mb-3 ${canAfford ? 'text-brand-purple' : 'text-slate-400'}`}>{item.cost} Points</div>
               <button
                 onClick={() => canAfford && setSelectedItem(item)}
                 disabled={!canAfford}
@@ -142,7 +153,7 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
                   }`}
               >
-                {canAfford ? 'Redeem' : 'Need more Bonus'}
+                {canAfford ? 'Redeem' : 'Need more Points'}
               </button>
             </motion.div>
           );

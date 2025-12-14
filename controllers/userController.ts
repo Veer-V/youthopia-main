@@ -1,84 +1,169 @@
-import { UserData } from '../types';
-import { DB } from './db';
 
-const USERS_KEY = 'yth_users';
+import { UserData } from '../types';
+import { apiClient } from './apiClient';
 
 export const UserController = {
   getAll: async (): Promise<UserData[]> => {
-    return DB.read<UserData[]>(USERS_KEY, []);
+    try {
+      // Attempt to list all users via /user/data (Common REST pattern, though not explicitly documented)
+      try {
+        const users = await apiClient.get('/user');
+        if (Array.isArray(users)) {
+          return users.map((u: any) => ({
+            id: u._id || u.id,
+            Yid: u.Yid,
+            name: u.name,
+            email: u.email,
+            phone: u.mobile?.toString(),
+            institute: u.institute,
+            stream: u.stream,
+            class: u.class,
+            gender: u.gender,
+            age: u.age?.toString(),
+            role: 'student',
+            registered: u.registered || [],
+            completed: u.completed || [],
+            // bonus: u.points || 0,
+            points: u.points || 0,
+            // Default other fields
+            spinsAvailable: u.spinsAvailable ?? u.spins ?? u.spin ?? 0,
+            transactions: u.transactions || u.history || []
+          }));
+        }
+      } catch (e) {
+        // Fallback to leaderboard if /user/data list is not supported
+        const board = await apiClient.get('/leaderboard');
+        if (Array.isArray(board)) {
+          return board.map((item: any) => ({
+            id: item._id || item.id,
+            Yid: item.Yid,
+            name: item.name,
+            // Email might be missing in leaderboard
+            email: item.email || `missing_${item._id || item.id}@example.com`,
+            institute: '',
+            class: '',
+            stream: '',
+            phone: '',
+            age: '',
+            gender: 'Other',
+            role: 'student',
+            // bonus: item.points || 0,
+            points: item.points || 0,
+            spinsAvailable: 0
+          }));
+        }
+      }
+      return [];
+    } catch (e) {
+      console.error("Get All Users failed", e);
+      return [];
+    }
   },
 
   add: async (user: UserData): Promise<UserData[]> => {
-    const users = DB.read<UserData[]>(USERS_KEY, []);
-    // Prevent duplicates in list
-    if (users.find(u => u.email === user.email)) return users;
-
-    const newUsers = [...users, user];
-    DB.write(USERS_KEY, newUsers);
-    return newUsers;
+    // Logic handled by AuthController.register usually
+    return await UserController.getAll();
   },
 
-  delete: async (email: string): Promise<UserData[]> => {
-    const users = DB.read<UserData[]>(USERS_KEY, []);
-    const newUsers = users.filter(u => u.email !== email);
-    DB.write(USERS_KEY, newUsers);
-    return newUsers;
+  delete: async (id: string): Promise<UserData[]> => {
+    try {
+      // ID is required
+      if (id) {
+        await apiClient.delete(`/user/${id}`); // Best effort delete
+      }
+    } catch (e) {
+      console.error("Delete user failed", e);
+    }
+    return await UserController.getAll();
   },
 
   updateBonus: async (email: string, amount: number, reason: string = "General Update"): Promise<UserData[]> => {
-    const users = DB.read<UserData[]>(USERS_KEY, []);
-    const newUsers = users.map(u => {
-      if (u.email === email) {
-        const newTransaction: any = {
-          id: Date.now().toString(),
-          type: amount >= 0 ? 'credit' : 'debit',
-          amount: Math.abs(amount),
-          reason: reason,
-          timestamp: new Date().toLocaleString()
+    try {
+      const users = await UserController.getAll();
+      const user = users.find(u => u.email === email || u.id === email);
+
+      if (user && user.id) {
+        const payload = {
+          event: "manual_update",
+          user: { id: user.id, name: user.name },
+          points: amount,
+          admin: "system"
         };
-        return {
-          ...u,
-          bonus: (u.bonus || 0) + amount,
-          transactions: [newTransaction, ...(u.transactions || [])]
-        };
+        await apiClient.post('/transaction', payload);
       }
-      return u;
-    });
-    DB.write(USERS_KEY, newUsers);
-    return newUsers;
+    } catch (e) {
+      console.error("Update bonus failed", e);
+    }
+    return await UserController.getAll();
   },
 
   grantEventBonus: async (email: string, bonusAmount: number): Promise<UserData[]> => {
-    const users = DB.read<UserData[]>(USERS_KEY, []);
-    const newUsers = users.map(u => {
-      if (u.email === email) {
-        const newTransaction: any = {
-          id: Date.now().toString(),
-          type: 'credit',
-          amount: bonusAmount,
-          reason: 'Admin Reward (4 Events)',
-          timestamp: new Date().toLocaleString()
-        };
-        return {
-          ...u,
-          bonus: (u.bonus || 0) + bonusAmount,
-          spinsAvailable: (u.spinsAvailable || 0) + 1,
-          bonusGrantCount: (u.bonusGrantCount || 0) + 1,
-          transactions: [newTransaction, ...(u.transactions || [])]
-        };
-      }
-      return u;
-    });
-    DB.write(USERS_KEY, newUsers);
-    return newUsers;
+    return await UserController.updateBonus(email, bonusAmount, "Event Bonus");
   },
 
-  consumeSpin: async (email: string): Promise<UserData[]> => {
-    const users = DB.read<UserData[]>(USERS_KEY, []);
-    const newUsers = users.map(u =>
-      u.email === email ? { ...u, spinsAvailable: Math.max(0, (u.spinsAvailable || 0) - 1) } : u
-    );
-    DB.write(USERS_KEY, newUsers);
-    return newUsers;
+  consumeSpin: async (email: string, points: number): Promise<UserData[]> => {
+    try {
+      const users = await UserController.getAll();
+      const user = users.find(u => u.email === email || u.id === email);
+
+      const targetId = user?.Yid || user?.id;
+
+      if (targetId) {
+        // Use Yid based endpoint as requested
+        await apiClient.post(`/user/spin/${targetId}`, {
+          spins: 1,
+          points: points
+        });
+      } else {
+        console.warn("Consume spin failed: User ID/Yid not found for " + email);
+      }
+    } catch (e) {
+      console.error("Consume spin failed", e);
+    }
+    return await UserController.getAll();
+  },
+
+  getPoints: async (id: string): Promise<number | null> => {
+    try {
+      const response = await apiClient.get(`/user/points/${id}`);
+      if (response && typeof response.points === 'number') {
+        return response.points;
+      }
+      return null;
+    } catch (e) {
+      console.warn("Failed to fetch points for user " + id, e);
+      return null;
+    }
+  },
+
+  getUserData: async (yid: string): Promise<UserData | null> => {
+    try {
+      const response = await apiClient.get(`/user/data/${yid}`);
+      if (response && (response.id || response._id)) {
+        return {
+          ...response, // Persist all API fields
+          id: response._id || response.id,
+          Yid: response.Yid,
+          name: response.name,
+          email: response.email,
+          phone: response.mobile?.toString() || response.phone,
+          institute: response.institute,
+          stream: response.stream,
+          class: response.class,
+          gender: response.gender,
+          age: response.age?.toString(),
+          role: 'student',
+          points: response.points || 0,
+          spinsAvailable: response.spinsAvailable ?? response.spins ?? response.spin ?? 0,
+          registered: response.registered || [],
+          completed: response.completed || [],
+          transactions: response.transactions || response.history || []
+        };
+      }
+      return null;
+    } catch (e) {
+      console.warn("Failed to fetch user data for " + yid, e);
+      return null;
+    }
   }
 };

@@ -4,13 +4,14 @@ import { motion, useMotionValue, useTransform, animate, AnimatePresence } from '
 import { Sparkles, Trophy, Lock, ChevronRight, CircleCheck, CircleAlert, Award } from 'lucide-react';
 import Button from '../Button';
 import SpinFeedbackModal from './SpinFeedbackModal';
+import { useData } from '@/contexts/DataContext';
 
 interface BonusProps {
   bonus: number;
   onAddBonus: (amount: number) => void;
   spinsAvailable: number;
   eventsCount: number;
-  onSpinUsed: () => void;
+  onSpinUsed: (points: number) => void;
   onNavigateToRedeem: () => void;
   userName: string;
   userEmail: string;
@@ -30,6 +31,34 @@ const AnimatedCounter = ({ value }: { value: number }) => {
 };
 
 const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, eventsCount, onSpinUsed, onNavigateToRedeem, userName, userEmail, onSubmitFeedback }) => {
+  const { user, events } = useData();
+  const displayBonus = user?.points || bonus || 0;
+
+  // Filter for Engagement events only
+  const registeredEventsCount = React.useMemo(() => {
+    if (!user?.registered) return 0;
+
+    // Get list of registered IDs
+    let regIds: string[] = [];
+    if (Array.isArray(user.registered)) {
+      regIds = user.registered.map((r: any) => typeof r === 'string' ? r : (r._id || r.id));
+    } else if (typeof user.registered === 'object') {
+      regIds = Object.keys(user.registered);
+    }
+
+    // Count how many match an 'Engagement' event
+    return regIds.filter(id => {
+      const evt = events.find(e => e.id === id || e._id === id);
+      return evt?.category === 'Engagement';
+    }).length;
+  }, [user, events]);
+
+  const spinThreshold = 4;
+  const earnedSpins = Math.floor(registeredEventsCount / spinThreshold);
+
+  // Use backend 'spinsAvailable' as source of truth if it exists, otherwise fallback to calculated
+  const displaySpins = user?.spinsAvailable !== undefined ? user.spinsAvailable : earnedSpins;
+
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
 
@@ -56,9 +85,9 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
   }, [toast]);
 
   const handleSpin = () => {
-    if (isSpinning || spinsAvailable <= 0) return;
+    if (isSpinning || displaySpins <= 0) return;
     setIsSpinning(true);
-    onSpinUsed(); // Deduct spin immediately to prevent double clicks
+    // onSpinUsed(); // Moved to feedback submit as per request
 
     // Random spin
     const randomSegmentIndex = Math.floor(Math.random() * segments.length);
@@ -83,8 +112,8 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
     // Submit feedback
     onSubmitFeedback(rating, favoriteAspect, wouldRecommend, pendingPrize);
 
-    // Award points after feedback
-    onAddBonus(pendingPrize);
+    // Call spin point endpoint (consume spin / transaction)
+    onSpinUsed(pendingPrize);
 
     // Close feedback modal
     setShowFeedbackModal(false);
@@ -94,9 +123,9 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
     setShowResult(true);
   };
 
-  const spinThreshold = 4;
-  const progressToNextSpin = (eventsCount % spinThreshold) / spinThreshold * 100;
-  const eventsNeeded = spinThreshold - (eventsCount % spinThreshold);
+  // const spinThreshold = 4; // Already defined above
+  const progressToNextSpin = (registeredEventsCount % spinThreshold) / spinThreshold * 100;
+  const eventsNeeded = spinThreshold - (registeredEventsCount % spinThreshold);
 
   return (
     <div className="space-y-12">
@@ -109,7 +138,7 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
           className="relative inline-block"
         >
           <motion.div
-            key={bonus}
+            key={displayBonus}
             initial={{ scale: 1.1 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 300, damping: 15 }}
@@ -127,7 +156,7 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
                 transition={{ delay: 0.3 }}
                 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-brand-yellow"
               >
-                <AnimatedCounter value={bonus} />
+                <AnimatedCounter value={displayBonus} />
               </motion.div>
               <div className="text-slate-400 font-semibold mt-1">Total Bonus</div>
             </div>
@@ -163,7 +192,7 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
           <div className="flex justify-center mb-6">
             <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg flex items-center gap-2">
               <Award size={24} />
-              <span>{spinsAvailable} {spinsAvailable === 1 ? 'Spin' : 'Spins'} Available</span>
+              <span>{displaySpins} {displaySpins === 1 ? 'Spin' : 'Spins'} Available</span>
             </div>
           </div>
 
@@ -183,7 +212,7 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
               transition={{ duration: 2.5, ease: "circOut" }}
               style={{ transformOrigin: 'center' }}
             >
-              {spinsAvailable <= 0 && !isSpinning && (
+              {displaySpins <= 0 && !isSpinning && (
                 <div className="absolute inset-0 bg-black/60 z-30 flex items-center justify-center backdrop-blur-[2px]">
                   <Lock className="text-white/50 w-16 h-16" />
                 </div>
@@ -229,7 +258,7 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
           </div>
 
           <div className="text-center px-4">
-            {spinsAvailable > 0 ? (
+            {displaySpins > 0 ? (
               <Button
                 variant="secondary"
                 fullWidth
@@ -253,7 +282,7 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
                   />
                 </div>
                 <p className="text-[10px] text-slate-500 mt-2 text-right">
-                  {eventsCount % spinThreshold}/{spinThreshold} Completed
+                  {registeredEventsCount % spinThreshold}/{spinThreshold} Completed
                 </p>
               </div>
             )}
@@ -366,9 +395,9 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
         transition={{ delay: 0.4 }}
         className="max-w-md mx-auto bg-white rounded-2xl p-6 shadow-sm border border-slate-100 text-left"
       >
-        <h3 className="font-bold text-slate-800 mb-4">Bonus History</h3>
-        <div className="space-y-4">
-          {pendingPrize > 0 ? (
+        {/* <h3 className="font-bold text-slate-800 mb-4">Bonus History</h3>
+        <div className="space-y-4 max-h-60 overflow-y-auto pr-2">
+          {pendingPrize > 0 && (
             <div className="flex justify-between items-center p-2 hover:bg-slate-50 rounded-xl transition-colors">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><Sparkles size={16} /></div>
@@ -379,10 +408,29 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
               </div>
               <span className="text-green-600 font-bold">+{pendingPrize}</span>
             </div>
-          ) : (
-            <p className="text-slate-400 text-sm text-center">No history yet.</p>
           )}
-        </div>
+
+          {user?.transactions && user.transactions.length > 0 ? (
+            user.transactions.slice().reverse().map((tx: any, idx: number) => (
+              <div key={idx} className="flex justify-between items-center p-2 hover:bg-slate-50 rounded-xl transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                    {tx.type === 'credit' ? <Sparkles size={16} /> : <Award size={16} />}
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold">{tx.reason || 'Transaction'}</div>
+                    <div className="text-xs text-slate-400">{new Date(tx.timestamp).toLocaleDateString()}</div>
+                  </div>
+                </div>
+                <span className={`font-bold ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                  {tx.type === 'credit' ? '+' : '-'}{Math.abs(tx.amount)}
+                </span>
+              </div>
+            ))
+          ) : (
+            !pendingPrize && <p className="text-slate-400 text-sm text-center">No history yet.</p>
+          )}
+        </div> */}
       </motion.div>
     </div>
   );

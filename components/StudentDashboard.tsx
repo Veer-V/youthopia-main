@@ -42,7 +42,17 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
 
   // Derived state from Context
   const bonus = user ? getStudentBonus(user.email) : 0;
-  const registeredEventIds = (user && registrations[user.email]) ? registrations[user.email] : [];
+
+  const registeredEventIds = useMemo(() => {
+    if (user?.registered && user.registered.length > 0) {
+      // Safely handle if registered is array of strings or populated objects
+      return user.registered.map(r => {
+        if (typeof r === 'string') return r;
+        return (r as any)._id || (r as any).id;
+      });
+    }
+    return (user && registrations[user.email]) ? registrations[user.email] : [];
+  }, [user, registrations]);
 
   const handleRedeem = (cost: number) => {
     if (user) {
@@ -56,15 +66,15 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
     }
   };
 
-  const handleEventRegistration = (eventId: string) => {
+  const handleEventRegistration = (eventId: string, team?: any[]) => {
     if (user) {
-      registerForEvent(user.email, eventId);
+      registerForEvent(user.email, eventId, team);
     }
   };
 
-  const handleSpinUsed = () => {
+  const handleSpinUsed = (points: number) => {
     if (user) {
-      consumeSpin(user.email);
+      consumeSpin(user.email, points);
     }
   };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, Variants, useSpring, useTransform, animate, useMotionValue } from 'framer-motion';
-import { Award, User, Phone, Book, GraduationCap, Info, Sparkles, Mail } from 'lucide-react';
+import { Award, User, Phone, Book, GraduationCap, Info, Sparkles, Mail, Copy, Check } from 'lucide-react';
 import { UserData } from '../../types';
 
 interface MeProps {
@@ -38,16 +38,28 @@ const Me: React.FC<MeProps> = ({ bonus, user, registeredEventIds }) => {
       show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
    };
 
+   const [hasCopied, setHasCopied] = React.useState(false);
+
+   const handleCopy = () => {
+      if (user?.Yid || user?.id) {
+         navigator.clipboard.writeText(user?.Yid || user?.id || "");
+         setHasCopied(true);
+         setTimeout(() => setHasCopied(false), 2000);
+      }
+   };
+
    const userData = user || {
       name: "Guest Student",
       email: "guest@example.com",
-      school: "N/A",
+      institute: "N/A",
       class: "N/A",
       stream: "N/A",
       phone: "N/A",
       age: "N/A",
       gender: "N/A",
-      adminId: ""
+      adminId: "",
+      Yid: "",
+      points: 0,
    };
 
    return (
@@ -71,7 +83,7 @@ const Me: React.FC<MeProps> = ({ bonus, user, registeredEventIds }) => {
                </div>
                <div className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-1">Current Balance</div>
                <div className="text-6xl font-black text-slate-900 mb-2">
-                  <AnimatedCounter value={bonus} />
+                  <AnimatedCounter value={userData.points || 0} />
                </div>
                <div className="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">
                   Mental Wellness Points
@@ -92,12 +104,21 @@ const Me: React.FC<MeProps> = ({ bonus, user, registeredEventIds }) => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors group">
+               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors group relative">
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                      Yid
+                     Yid
                   </div>
-                  <div className="font-bold text-slate-800 text-lg group-hover:text-brand-purple transition-colors truncate" title={userData.email}>
-                     16AC0D
+                  <div className="flex items-center justify-between gap-2">
+                     <div className="font-bold text-slate-800 text-lg group-hover:text-brand-purple transition-colors truncate" title={userData.email}>
+                        {userData.Yid}
+                     </div>
+                     <button
+                        onClick={handleCopy}
+                        className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                        title="Copy Yid"
+                     >
+                        {hasCopied ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                     </button>
                   </div>
                </div>
                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors group">
@@ -123,12 +144,7 @@ const Me: React.FC<MeProps> = ({ bonus, user, registeredEventIds }) => {
                   <div className="font-bold text-slate-800 text-lg group-hover:text-brand-purple transition-colors">{userData.gender}</div>
                </div>
 
-               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-colors group">
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                     <Sparkles size={12} /> Status
-                  </div>
-                  <div className="font-bold text-slate-800 text-lg group-hover:text-brand-purple transition-colors">Active Participant</div>
-               </div>
+
             </div>
          </motion.div>
       </motion.div>

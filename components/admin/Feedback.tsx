@@ -119,12 +119,12 @@ const Feedback: React.FC = () => {
 
                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   {/* Chart Area */}
-                  <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col h-[400px]">
+                  {/* <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col h-[400px]">
                      <h3 className="font-bold text-slate-800 mb-6">Happiness Trend</h3>
                      <div className="flex-1 w-full px-4 pb-4">
                         <SimpleBarChart data={sentimentData} labels={sentimentLabels} color="bg-gradient-to-t from-yellow-400 to-orange-400" />
                      </div>
-                  </div>
+                  </div> */}
 
                   {/* Recent Feed */}
                   <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col h-[400px]">

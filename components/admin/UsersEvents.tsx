@@ -1,16 +1,19 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Calendar, Search, Filter, Edit, Trash2, Plus, X, Download, Eye, CheckCircle2, Info, Gift } from 'lucide-react';
 import Input from '../Input';
 import Button from '../Button';
 import { useData } from '../../contexts/DataContext';
 import { UserData } from '../../types';
+import Loader from '../Loader';
 
 const UsersEvents: React.FC = () => {
    const { users, events, addUser, deleteUser, addEvent, updateEvent, deleteEvent, registrations, completedEvents, grantEventBonus } = useData();
    const [activeTab, setActiveTab] = useState<'users' | 'events'>('users');
    const [searchQuery, setSearchQuery] = useState('');
+   const [isSearching, setIsSearching] = useState(false);
+   const searchTimeout = useRef<NodeJS.Timeout | null>(null);
 
    // Modal States
    const [showUserModal, setShowUserModal] = useState(false);
@@ -20,7 +23,7 @@ const UsersEvents: React.FC = () => {
    const [selectedUserForActivity, setSelectedUserForActivity] = useState<UserData | null>(null);
 
    // Form States
-   const [newUser, setNewUser] = useState({ name: '', email: '', school: '', class: '', stream: '' });
+   const [newUser, setNewUser] = useState({ name: '', email: '', institute: '', class: '', stream: '' });
    const [newEvent, setNewEvent] = useState({ title: '', category: 'Intercollegiate', date: '', loc: '' });
    const [editingEventId, setEditingEventId] = useState<string | null>(null);
 
@@ -32,7 +35,7 @@ const UsersEvents: React.FC = () => {
          return;
       }
       const headers = ["ID,Name,School,Class,Stream,Bonus"];
-      const rows = users.map(u => `${u.email},${u.name},${u.school},${u.class},${u.stream},${u.bonus}`);
+      const rows = users.map(u => `${u.email},${u.name},${u.institute},${u.class},${u.stream},${u.bonus}`);
       const csvContent = "data:text/csv;charset=utf-8," + headers.concat(rows).join("\n");
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
@@ -53,7 +56,7 @@ const UsersEvents: React.FC = () => {
       addUser({
          email: newUser.email || `student${users.length + 1}@example.com`,
          name: newUser.name,
-         school: newUser.school,
+         institute: newUser.institute,
          class: newUser.class,
          stream: newUser.stream,
          phone: '0000000000',
@@ -63,7 +66,7 @@ const UsersEvents: React.FC = () => {
          bonus: 0
       });
       setShowUserModal(false);
-      setNewUser({ name: '', email: '', school: '', class: '', stream: '' });
+      setNewUser({ name: '', email: '', institute: '', class: '', stream: '' });
    };
 
    const handleDeleteEvent = (id: string) => {
@@ -118,31 +121,57 @@ const UsersEvents: React.FC = () => {
       setShowEventModal(true);
    };
 
-   const getUserActivities = (email: string) => {
-      const regIds = registrations[email] || [];
-      const compIds = completedEvents[email] || [];
+   const getUserActivities = (user: UserData) => {
+      // Handle 'registered' property which can be an Object (Dictionary) or Array
+      let regIds: string[] = [];
+      if (user.registered) {
+         if (Array.isArray(user.registered)) {
+            regIds = user.registered;
+         } else if (typeof user.registered === 'object') {
+            regIds = Object.keys(user.registered);
+         }
+      }
+
+      // Handle 'completed' property
+      let compIds: string[] = [];
+      if (user.completed) {
+         if (Array.isArray(user.completed)) {
+            compIds = user.completed;
+         } else if (typeof user.completed === 'object') {
+            compIds = Object.keys(user.completed);
+         }
+      }
+
       return regIds.map(id => {
          const evt = events.find(e => e.id === id);
-         if (!evt) return null;
+         // If event doesn't exist in local list (maybe deleted?), show generic info or skip
+         if (!evt) return {
+            id,
+            title: 'Unknown Event',
+            category: 'N/A',
+            status: compIds.includes(id) ? 'Completed' : 'Registered'
+         };
+
          return {
             ...evt,
             status: compIds.includes(id) ? 'Completed' : 'Registered'
          };
-      }).filter(Boolean);
+      });
    };
 
    // --- FILTERING ---
 
    const filteredUsers = users.filter(user =>
       user.role === 'student' && (
-         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-         user.email.toLowerCase().includes(searchQuery.toLowerCase())
+         (user.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+         (user.email || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+         (user.Yid || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
    );
 
    const filteredEvents = events.filter(event =>
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.category.toLowerCase().includes(searchQuery.toLowerCase())
+      (event.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (event.category || '').toLowerCase().includes(searchQuery.toLowerCase())
    );
 
    const resetSearch = () => setSearchQuery('');
@@ -177,7 +206,12 @@ const UsersEvents: React.FC = () => {
                   placeholder={activeTab === 'users' ? "Search student by name or email..." : "Search events by name or category..."}
                   icon={<Search size={18} />}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                     setSearchQuery(e.target.value);
+                     setIsSearching(true);
+                     if (searchTimeout.current) clearTimeout(searchTimeout.current);
+                     searchTimeout.current = setTimeout(() => setIsSearching(false), 1000);
+                  }}
                />
             </div>
             <div className="flex gap-2">
@@ -212,59 +246,68 @@ const UsersEvents: React.FC = () => {
                   <table className="w-full text-left border-collapse min-w-[700px]">
                      <thead className="bg-slate-50 text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100">
                         <tr>
-                           <th className="p-4 pl-6">ID / Email</th>
+                           <th className="p-4 pl-6">YID</th>
                            <th className="p-4">Name</th>
-                           <th className="p-4 hidden md:table-cell">School</th>
-                           <th className="p-4 hidden md:table-cell">Activity</th>
-                           <th className="p-4">Bonus</th>
-                           <th className="p-4 text-right pr-6">Actions</th>
+                           <th className="p-4 hidden md:table-cell">Institute</th>
+                           <th className="p-4 hidden md:table-cell">Events Participated</th>
+                           <th className="p-4">Points</th>
+                           <th className="p-4 text-right pr-6">Action</th>
                         </tr>
                      </thead>
                      <tbody className="divide-y divide-slate-100 text-sm">
-                        <AnimatePresence>
-                           {filteredUsers.length > 0 ? filteredUsers.map(user => {
-                              const acts = getUserActivities(user.email);
-                              return (
-                                 <motion.tr
-                                    key={user.email}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    className="hover:bg-slate-50 transition-colors"
-                                 >
-                                    <td className="p-4 pl-6 font-mono text-slate-400 truncate max-w-[150px]" title={user.email}>{user.email}</td>
-                                    <td className="p-4 font-bold text-slate-800">{user.name}</td>
-                                    <td className="p-4 hidden md:table-cell text-slate-600">{user.school}</td>
-                                    <td className="p-4 hidden md:table-cell">
-                                       <button onClick={() => setSelectedUserForActivity(user)} className="text-brand-purple hover:underline text-xs font-bold flex items-center gap-1">
-                                          <Eye size={12} /> {acts.length} Events
-                                       </button>
-                                    </td>
-                                    <td className="p-4 font-bold text-brand-purple">{user.bonus}</td>
-                                    <td className="p-4 text-right pr-6 flex justify-end gap-2">
-                                       {acts.filter((a: any) => a.category === 'Engagement').length >= ((user.bonusGrantCount || 0) + 1) * 4 && (
-                                          <Button
-                                             variant="secondary"
-                                             className="text-xs py-1 px-3 h-auto gap-1 bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200"
-                                             onClick={() => {
-                                                if (confirm(`Grant 200 points and 1 spin to ${user.name} for completing 4 events?`)) {
-                                                   grantEventBonus(user.email, 200);
-                                                }
-                                             }}
-                                          >
-                                             <Gift size={14} /> Grant Spin
-                                          </Button>
-                                       )}
-                                       <button onClick={() => handleDeleteUser(user.email)} className="p-2 hover:bg-red-100 rounded-lg text-red-500"><Trash2 size={16} /></button>
-                                    </td>
-                                 </motion.tr>
-                              )
-                           }) : (
-                              <tr>
-                                 <td colSpan={6} className="p-8 text-center text-slate-400">No students found matching "{searchQuery}"</td>
-                              </tr>
-                           )}
-                        </AnimatePresence>
+                        {isSearching ? (
+                           <tr>
+                              <td colSpan={6} className="p-8 text-center">
+                                 <div className="flex justify-center items-center w-full">
+                                    <Loader />
+                                 </div>
+                              </td>
+                           </tr>
+                        ) : (
+                           <AnimatePresence mode="wait">
+                              {filteredUsers.length > 0 ? filteredUsers.map(user => {
+                                 const acts = getUserActivities(user);
+                                 return (
+                                    <motion.tr
+                                       key={user.email}
+                                       initial={{ opacity: 0 }}
+                                       animate={{ opacity: 1 }}
+                                       exit={{ opacity: 0, height: 0 }}
+                                       className="hover:bg-slate-50 transition-colors"
+                                    >
+                                       <td className="p-4 pl-6 font-mono text-slate-400 truncate max-w-[150px]" title={user.Yid}>{user.Yid}</td>
+                                       <td className="p-4 font-bold text-slate-800">{user.name}</td>
+                                       <td className="p-4 hidden md:table-cell text-slate-600">{user.institute}</td>
+                                       <td className="p-4 hidden md:table-cell">
+                                          <button onClick={() => setSelectedUserForActivity(user)} className="text-brand-purple hover:underline text-xs font-bold flex items-center gap-1">
+                                             <Eye size={12} /> {acts.length} Events
+                                          </button>
+                                       </td>
+                                       <td className="p-4 font-bold text-brand-purple">{user.points}</td>
+                                       <td className="p-4 text-right pr-6 flex justify-end gap-2">
+                                          {acts.length >= ((user.bonusGrantCount || 0) + 1) * 4 && (
+                                             <Button
+                                                variant="secondary"
+                                                className="text-xs py-1 px-3 h-auto gap-1 bg-yellow-100 text-yellow-700 hover:bg-yellow-200 border-yellow-200"
+                                                onClick={() => {
+                                                   if (confirm(`Grant 200 points and 1 spin to ${user.name} for completing 4 events?`)) {
+                                                      grantEventBonus(user.email, 200);
+                                                   }
+                                                }}
+                                             >
+                                                <Gift size={14} /> Grant Spin
+                                             </Button>
+                                          )}
+                                       </td>
+                                    </motion.tr>
+                                 )
+                              }) : (
+                                 <tr>
+                                    <td colSpan={6} className="p-8 text-center text-slate-400">No students found matching "{searchQuery}"</td>
+                                 </tr>
+                              )}
+                           </AnimatePresence>
+                        )}
                      </tbody>
                   </table>
                </div>
@@ -282,39 +325,49 @@ const UsersEvents: React.FC = () => {
                         </tr>
                      </thead>
                      <tbody className="divide-y divide-slate-100 text-sm">
-                        <AnimatePresence>
-                           {filteredEvents.length > 0 ? filteredEvents.map(event => (
-                              <motion.tr
-                                 key={event.id}
-                                 initial={{ opacity: 0 }}
-                                 animate={{ opacity: 1 }}
-                                 exit={{ opacity: 0, height: 0 }}
-                                 className="hover:bg-slate-50 transition-colors"
-                              >
-                                 <td className="p-4 pl-6 font-bold text-slate-800">{event.title}</td>
-                                 <td className="p-4">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${event.category === 'Intercollegiate' ? 'bg-purple-100 text-purple-700' : 'bg-pink-100 text-pink-700'}`}>
-                                       {event.category}
-                                    </span>
-                                 </td>
-                                 <td className="p-4 hidden md:table-cell text-slate-500">{event.date}, {event.time}</td>
-                                 <td className="p-4 hidden md:table-cell text-slate-600">--</td>
-                                 <td className="p-4">
-                                    <span className="text-green-600 font-bold text-xs flex items-center gap-1">
-                                       <div className="w-2 h-2 rounded-full bg-green-500" /> Active
-                                    </span>
-                                 </td>
-                                 <td className="p-4 text-right pr-6 flex justify-end gap-2">
-                                    <button onClick={() => openEditEvent(event)} className="p-2 hover:bg-slate-200 rounded-lg text-slate-500"><Edit size={16} /></button>
-                                    <button onClick={() => handleDeleteEvent(event.id)} className="p-2 hover:bg-red-100 rounded-lg text-red-500"><Trash2 size={16} /></button>
-                                 </td>
-                              </motion.tr>
-                           )) : (
-                              <tr>
-                                 <td colSpan={6} className="p-8 text-center text-slate-400">No events found matching "{searchQuery}"</td>
-                              </tr>
-                           )}
-                        </AnimatePresence>
+                        {isSearching ? (
+                           <tr>
+                              <td colSpan={6} className="p-8 text-center">
+                                 <div className="flex justify-center items-center w-full">
+                                    <Loader />
+                                 </div>
+                              </td>
+                           </tr>
+                        ) : (
+                           <AnimatePresence mode="wait">
+                              {filteredEvents.length > 0 ? filteredEvents.map(event => (
+                                 <motion.tr
+                                    key={event.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="hover:bg-slate-50 transition-colors"
+                                 >
+                                    <td className="p-4 pl-6 font-bold text-slate-800">{event.title}</td>
+                                    <td className="p-4">
+                                       <span className={`px-2 py-1 rounded-full text-xs font-bold ${event.category === 'Intercollegiate' ? 'bg-purple-100 text-purple-700' : 'bg-pink-100 text-pink-700'}`}>
+                                          {event.category}
+                                       </span>
+                                    </td>
+                                    <td className="p-4 hidden md:table-cell text-slate-500">{event.date}, {event.time}</td>
+                                    <td className="p-4 hidden md:table-cell text-slate-600">--</td>
+                                    <td className="p-4">
+                                       <span className="text-green-600 font-bold text-xs flex items-center gap-1">
+                                          <div className="w-2 h-2 rounded-full bg-green-500" /> Active
+                                       </span>
+                                    </td>
+                                    <td className="p-4 text-right pr-6 flex justify-end gap-2">
+                                       <button onClick={() => openEditEvent(event)} className="p-2 hover:bg-slate-200 rounded-lg text-slate-500"><Edit size={16} /></button>
+                                       <button onClick={() => handleDeleteEvent(event.id)} className="p-2 hover:bg-red-100 rounded-lg text-red-500"><Trash2 size={16} /></button>
+                                    </td>
+                                 </motion.tr>
+                              )) : (
+                                 <tr>
+                                    <td colSpan={6} className="p-8 text-center text-slate-400">No events found matching "{searchQuery}"</td>
+                                 </tr>
+                              )}
+                           </AnimatePresence>
+                        )}
                      </tbody>
                   </table>
                </div>
@@ -332,7 +385,7 @@ const UsersEvents: React.FC = () => {
                   <div className="space-y-4">
                      <Input variant="light" placeholder="Full Name" value={newUser.name} onChange={e => setNewUser({ ...newUser, name: e.target.value })} />
                      <Input variant="light" placeholder="Email Address" type="email" value={newUser.email} onChange={e => setNewUser({ ...newUser, email: e.target.value })} />
-                     <Input variant="light" placeholder="School/College" value={newUser.school} onChange={e => setNewUser({ ...newUser, school: e.target.value })} />
+                     <Input variant="light" placeholder="School/College" value={newUser.institute} onChange={e => setNewUser({ ...newUser, institute: e.target.value })} />
                      <div className="grid grid-cols-2 gap-4">
                         <Input variant="light" placeholder="Class" value={newUser.class} onChange={e => setNewUser({ ...newUser, class: e.target.value })} />
                         <Input variant="light" placeholder="Stream" value={newUser.stream} onChange={e => setNewUser({ ...newUser, stream: e.target.value })} />
@@ -356,8 +409,8 @@ const UsersEvents: React.FC = () => {
                   </div>
 
                   <div className="overflow-y-auto flex-1 space-y-2 pr-1">
-                     {getUserActivities(selectedUserForActivity.email).length > 0 ? (
-                        getUserActivities(selectedUserForActivity.email).map((evt: any) => (
+                     {getUserActivities(selectedUserForActivity).length > 0 ? (
+                        getUserActivities(selectedUserForActivity).map((evt: any) => (
                            <div key={evt.id} className={`p-3 rounded-xl border flex justify-between items-center ${evt.status === 'Completed' ? 'bg-green-50 border-green-200' : 'bg-slate-50 border-slate-200'}`}>
                               <div>
                                  <div className="font-bold text-slate-800 text-sm">{evt.title}</div>

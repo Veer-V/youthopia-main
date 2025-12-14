@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
@@ -7,6 +6,7 @@ import Button from '../Button';
 import Input from '../Input';
 import { EventData, UserData } from '../../types';
 import { useData } from '../../contexts/DataContext';
+import Loader from '../Loader';
 
 interface TeamMember {
   name: string;
@@ -15,15 +15,16 @@ interface TeamMember {
 
 interface ActivitiesProps {
   registeredEventIds: string[];
-  onRegister: (eventId: string) => void;
+  onRegister: (eventId: string, team?: { name: string, Yid: string }[]) => void;
   user: UserData | null;
 }
 
 const PLACEHOLDER_IMAGE = "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?auto=format&fit=crop&w=1000&q=80";
 
 const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister, user }) => {
-  const { events, completedEvents, addFeedback } = useData();
+  const { events, completedEvents, addFeedback, isInitializing } = useData();
   const [activeFilter, setActiveFilter] = useState('All');
+  const [isFiltering, setIsFiltering] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFilter, setDateFilter] = useState('All Dates');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -41,7 +42,16 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
   const filters = ['All', 'Registered', 'Completed', 'Engagement', 'Intercollegiate'];
 
   const currentUserEmail = user?.email || '';
-  const myCompletedIds = currentUserEmail ? (completedEvents[currentUserEmail] || []) : [];
+
+  const myCompletedIds = useMemo(() => {
+    if (user?.completed && user.completed.length > 0) {
+      return user.completed.map(c => {
+        if (typeof c === 'string') return c;
+        return (c as any)._id || (c as any).id;
+      });
+    }
+    return currentUserEmail ? (completedEvents[currentUserEmail] || []) : [];
+  }, [user, completedEvents, currentUserEmail]);
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -55,25 +65,40 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
 
   // Extract unique dates for filter
   const uniqueDates = useMemo(() => {
-    const dates = new Set(events.map(e => e.date));
-    return ['All Dates', ...Array.from(dates)];
+    const dates = Array.from(new Set(events.map(e => e.date))).filter(Boolean).sort();
+    return ['All Dates', ...dates];
   }, [events]);
 
   // Memoize filtered events to improve performance
   const filteredEvents = useMemo(() => {
     return events.filter(e => {
       // Category Filter
+      // Category Filter
       if (activeFilter === 'Registered') {
-        if (!registeredEventIds.includes(e.id)) return false;
+        const isRegistered = registeredEventIds.includes(e.id || e._id) ||
+          (!!user && !!e.registered && (
+            (user.Yid && e.registered.includes(user.Yid)) ||
+            e.registered.includes(user.id || '___') ||
+            e.registered.includes(user._id || '___') ||
+            e.registered.includes(user.email || '___')
+          ));
+        if (!isRegistered) return false;
       } else if (activeFilter === 'Completed') {
-        if (!myCompletedIds.includes(e.id)) return false;
+        const isCompleted = myCompletedIds.includes(e.id) ||
+          (!!e.completed && (
+            (!!user?.Yid && e.completed.includes(user.Yid)) ||
+            (!!user?.id && e.completed.includes(user.id)) ||
+            (!!user?.email && e.completed.includes(user.email))
+          ));
+        if (!isCompleted) return false;
       } else if (activeFilter !== 'All') {
         if (e.category !== activeFilter) return false;
       }
 
       // Search Query Filter
-      const matchesSearch = e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        e.loc.toLowerCase().includes(searchQuery.toLowerCase());
+      // Search Query Filter
+      const matchesSearch = (e.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (e.loc || '').toLowerCase().includes(searchQuery.toLowerCase());
 
       // Date Filter
       const matchesDate = dateFilter === 'All Dates' || e.date === dateFilter;
@@ -84,7 +109,7 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
         ? a.title.localeCompare(b.title)
         : b.title.localeCompare(a.title);
     });
-  }, [events, activeFilter, searchQuery, dateFilter, sortOrder, registeredEventIds, myCompletedIds]);
+  }, [events, activeFilter, searchQuery, dateFilter, sortOrder, registeredEventIds, myCompletedIds, user]);
 
   // Pagination Logic
   const itemsPerPage = 12;
@@ -93,8 +118,24 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages) {
+      setIsFiltering(true);
       setCurrentPage(newPage);
+      setTimeout(() => {
+        setIsFiltering(false);
+      }, 600);
     }
+  };
+
+  const handleFilterChange = (filter: string) => {
+    if (filter === activeFilter) return;
+    setIsFiltering(true);
+    setActiveFilter(filter);
+    setCurrentPage(1);
+
+    // Simulate loading delay for visual feedback
+    setTimeout(() => {
+      setIsFiltering(false);
+    }, 800);
   };
 
   const handleRegisterClick = (e: React.MouseEvent, event: EventData) => {
@@ -167,7 +208,18 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
 
     setRegisteringState('loading');
     setTimeout(() => {
-      onRegister(selectedEvent.id);
+      if (selectedEvent.isTeamEvent) {
+        // Prepare team payload
+        // Assuming Member 1 (index 0) is the Leader (User themselves)
+        // We exclude the leader from the 'team' array sent to backend, as leader is the main 'user' in payload
+        const teamPayload = teamMembers.slice(1).map(m => ({
+          name: m.name,
+          Yid: m.id // Mapping 'id' input (Student ID) to 'Yid' backend field
+        }));
+        onRegister(selectedEvent.id, teamPayload);
+      } else {
+        onRegister(selectedEvent.id);
+      }
       setRegisteringState('success');
       setToast({ message: `Successfully registered for ${selectedEvent.title}!`, type: 'success' });
     }, 600);
@@ -213,6 +265,8 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
     hidden: { opacity: 0, y: 15 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 400, damping: 25 } }
   };
+
+
 
   return (
     <div className="space-y-8 relative">
@@ -279,7 +333,7 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
           {filters.map((filter) => (
             <button
               key={filter}
-              onClick={() => { setActiveFilter(filter); setCurrentPage(1); }}
+              onClick={() => handleFilterChange(filter)}
               className={`relative px-4 py-1.5 rounded-full text-sm font-semibold transition-colors whitespace-nowrap z-10 ${activeFilter === filter ? 'text-white' : 'text-slate-500 hover:text-slate-900'
                 }`}
             >
@@ -331,7 +385,11 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
       </div>
 
       {/* Events Grid */}
-      {displayedEvents.length > 0 ? (
+      {isInitializing || isFiltering ? (
+        <div className="flex justify-center items-center h-64 w-full col-span-full">
+          <Loader />
+        </div>
+      ) : displayedEvents.length > 0 ? (
         <motion.div
           variants={container}
           initial="hidden"
@@ -339,8 +397,19 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         >
           {displayedEvents.map((evt, i) => {
-            const isRegistered = registeredEventIds.includes(evt.id);
-            const isCompleted = myCompletedIds.includes(evt.id);
+            const isRegistered = registeredEventIds.includes(evt.id || evt._id) ||
+              (!!user && !!evt.registered && (
+                (user.Yid && evt.registered.includes(user.Yid)) ||
+                evt.registered.includes(user.id || '___') ||
+                evt.registered.includes(user._id || '___') ||
+                evt.registered.includes(user.email || '___')
+              ));
+            const isCompleted = myCompletedIds.includes(evt.id) ||
+              (!!evt.completed && (
+                (!!user?.Yid && evt.completed.includes(user.Yid)) ||
+                (!!user?.id && evt.completed.includes(user.id)) ||
+                (!!user?.email && evt.completed.includes(user.email))
+              ));
 
             return (
               <motion.div
@@ -414,7 +483,7 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
                     disabled={false}
                     onClick={(e) => handleRegisterClick(e, evt)}
                   >
-                    {isCompleted ? 'View Details' : isRegistered ? 'View Details' : (evt.isTeamEvent ? 'Register Team' : 'Register Now')}
+                    {isCompleted ? 'View Details' : isRegistered ? 'Registered' : (evt.isTeamEvent ? 'Register Team' : 'Register Now')}
                   </Button>
                 </div>
               </motion.div>
@@ -469,7 +538,7 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              className="absolute inset-0 backdrop-blur-2xl"
               onClick={() => setSelectedEvent(null)}
             />
             <motion.div
@@ -481,7 +550,7 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header Image/Quote Section */}
-              <div className={`relative h-64 bg-gradient-to-r ${selectedEvent.imageColor} flex flex-col justify-center items-center text-center p-8 text-white overflow-hidden shrink-0`}>
+              <div className={`relative h-64 bg-gradient-to-r ${selectedEvent.imageColor || 'from-blue-500 to-purple-600'} flex flex-col justify-center items-center text-center p-8 text-white overflow-hidden shrink-0`}>
                 <motion.div
                   initial={{ scale: 1.1, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
@@ -489,7 +558,7 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
                   className="absolute inset-0 z-0"
                 >
                   <img src={selectedEvent.image || PLACEHOLDER_IMAGE} alt="" loading="lazy" className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/60" />
+                  <div className="absolute inset-0 bg-black/40" />
                 </motion.div>
 
                 <div className="relative z-10 w-full flex flex-col items-center">
@@ -598,80 +667,83 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
                 </div>
 
                 {/* TEAM REGISTRATION FORM */}
-                {selectedEvent.isTeamEvent && !registeredEventIds.includes(selectedEvent.id) && !(myCompletedIds.includes(selectedEvent.id)) && (
-                  <div className="bg-brand-purple/5 border border-brand-purple/20 rounded-3xl p-6 md:p-8 mb-10">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-brand-purple text-white rounded-lg"><Users size={24} /></div>
-                      <div>
-                        <h3 className="text-xl font-bold text-slate-900">Team Registration</h3>
-                        <p className="text-slate-500 text-sm">You are the Team Leader. Add your members below.</p>
+                {selectedEvent.isTeamEvent &&
+                  !registeredEventIds.includes(selectedEvent.id) &&
+                  !(selectedEvent.registered?.some(uId => user && (uId === user.Yid || uId === user.id || uId === user.email))) &&
+                  !(myCompletedIds.includes(selectedEvent.id)) && (
+                    <div className="bg-brand-purple/5 border border-brand-purple/20 rounded-3xl p-6 md:p-8 mb-10">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-brand-purple text-white rounded-lg"><Users size={24} /></div>
+                        <div>
+                          <h3 className="text-xl font-bold text-slate-900">Team Registration</h3>
+                          <p className="text-slate-500 text-sm">You are the Team Leader. Add your members below.</p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="mb-6">
-                      <label className="text-sm font-semibold text-slate-700 ml-1 mb-2 block">
-                        Select Team Size
-                      </label>
-                      <select
-                        className="w-full md:w-1/3 bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-purple focus:outline-none transition-all"
-                        value={teamSize}
-                        onChange={(e) => handleTeamSizeChange(Number(e.target.value))}
-                      >
-                        {Array.from(
-                          { length: (selectedEvent.maxMembers || 12) - (selectedEvent.minMembers || 2) + 1 },
-                          (_, i) => (selectedEvent.minMembers || 2) + i
-                        ).map(num => (
-                          <option key={num} value={num}>{num} Members</option>
-                        ))}
-                      </select>
-                    </div>
+                      <div className="mb-6">
+                        <label className="text-sm font-semibold text-slate-700 ml-1 mb-2 block">
+                          Select Team Size
+                        </label>
+                        <select
+                          className="w-full md:w-1/3 bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-brand-purple focus:outline-none transition-all"
+                          value={teamSize}
+                          onChange={(e) => handleTeamSizeChange(Number(e.target.value))}
+                        >
+                          {Array.from(
+                            { length: (selectedEvent.maxMembers || 12) - (selectedEvent.minMembers || 2) + 1 },
+                            (_, i) => (selectedEvent.minMembers || 2) + i
+                          ).map(num => (
+                            <option key={num} value={num}>{num} Members</option>
+                          ))}
+                        </select>
+                      </div>
 
-                    <div className="space-y-4">
-                      {teamMembers.map((member, idx) => {
-                        const idError = validateMemberId(member.id, idx);
-                        return (
-                          <div key={idx} className={`bg-white p-4 rounded-xl border flex flex-col md:flex-row gap-4 items-start md:items-center ${idError ? 'border-red-300 ring-2 ring-red-100' : 'border-slate-200'}`}>
-                            <span className="bg-slate-100 text-slate-500 font-bold text-xs px-2 py-1 rounded-md uppercase">
-                              Member {idx + 1} {idx === 0 && "(Leader)"}
-                            </span>
-                            <div className="flex-1 w-full">
-                              <input
-                                placeholder="Full Name"
-                                className="w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-brand-purple"
-                                value={member.name}
-                                onChange={(e) => updateMember(idx, 'name', e.target.value)}
-                              />
+                      <div className="space-y-4">
+                        {teamMembers.map((member, idx) => {
+                          const idError = validateMemberId(member.id, idx);
+                          return (
+                            <div key={idx} className={`bg-white p-4 rounded-xl border flex flex-col md:flex-row gap-4 items-start md:items-center ${idError ? 'border-red-300 ring-2 ring-red-100' : 'border-slate-200'}`}>
+                              <span className="bg-slate-100 text-slate-500 font-bold text-xs px-2 py-1 rounded-md uppercase">
+                                Member {idx + 1} {idx === 0 && "(Leader)"}
+                              </span>
+                              <div className="flex-1 w-full">
+                                <input
+                                  placeholder="Full Name"
+                                  className="w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-brand-purple"
+                                  value={member.name}
+                                  onChange={(e) => updateMember(idx, 'name', e.target.value)}
+                                />
+                              </div>
+                              <div className="flex-1 w-full flex flex-col">
+                                <input
+                                  placeholder="YID (get this in Me Tab)"
+                                  className={`w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-sm focus:ring-1 ${idError ? 'focus:ring-red-500 text-red-600' : 'focus:ring-brand-purple'}`}
+                                  value={member.id}
+                                  onChange={(e) => updateMember(idx, 'id', e.target.value)}
+                                />
+                                {idError && (
+                                  <span className="text-[10px] text-red-500 font-bold mt-1 ml-1 flex items-center gap-1">
+                                    <AlertTriangle size={10} /> {idError}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                            <div className="flex-1 w-full flex flex-col">
-                              <input
-                                placeholder="Student ID (e.g., YTH-2025-XXX)"
-                                className={`w-full bg-slate-50 border-none rounded-lg px-3 py-2 text-sm focus:ring-1 ${idError ? 'focus:ring-red-500 text-red-600' : 'focus:ring-brand-purple'}`}
-                                value={member.id}
-                                onChange={(e) => updateMember(idx, 'id', e.target.value)}
-                              />
-                              {idError && (
-                                <span className="text-[10px] text-red-500 font-bold mt-1 ml-1 flex items-center gap-1">
-                                  <AlertTriangle size={10} /> {idError}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                          );
+                        })}
+                      </div>
 
-                    {teamError && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 text-red-600"
-                      >
-                        <AlertTriangle className="shrink-0" size={20} />
-                        <span className="font-semibold text-sm">{teamError}</span>
-                      </motion.div>
-                    )}
-                  </div>
-                )}
+                      {teamError && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="mt-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3 text-red-600"
+                        >
+                          <AlertTriangle className="shrink-0" size={20} />
+                          <span className="font-semibold text-sm">{teamError}</span>
+                        </motion.div>
+                      )}
+                    </div>
+                  )}
 
                 {/* Footer Action */}
                 <div className="flex flex-col items-center gap-4 pt-4 border-t border-slate-100">
@@ -689,7 +761,9 @@ const Activities: React.FC<ActivitiesProps> = ({ registeredEventIds, onRegister,
                         Close Details
                       </button>
                     </div>
-                  ) : (registeringState === 'success' || registeredEventIds.includes(selectedEvent.id)) ? (
+                  ) : (registeringState === 'success' ||
+                    registeredEventIds.includes(selectedEvent.id) ||
+                    (selectedEvent.registered?.some(uId => user && (uId === user.Yid || uId === user.id || uId === user.email)))) ? (
                     <div className="flex flex-col items-center gap-6 w-full">
                       <motion.div
                         initial={{ scale: 0.8, opacity: 0 }}

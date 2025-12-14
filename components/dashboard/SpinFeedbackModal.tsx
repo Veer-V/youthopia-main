@@ -68,7 +68,7 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.9, opacity: 0, y: 20 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="bg-white rounded-3xl p-8 max-w-lg w-full relative z-10 shadow-2xl overflow-hidden"
+                    className="bg-white rounded-2xl p-6 max-w-md w-full relative z-10 shadow-xl overflow-hidden"
                 >
                     {/* Decorative Background */}
                     <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-purple/10 to-brand-pink/10 rounded-full blur-3xl -z-10" />

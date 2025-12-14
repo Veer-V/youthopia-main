@@ -5,20 +5,27 @@ export type ViewState = 'splash' | 'landing' | 'auth' | 'dashboard';
 export type AuthState = 'login' | 'register' | 'admin' | 'welcome';
 
 export interface UserData {
+  id?: string; // Backend ID
+  _id?: string; // Raw backend ID
   name: string;
   email: string;
-  school: string;
+  institute: string;
   class: string;
   stream: string;
   phone: string;
   age: string;
   gender: string;
-  adminId?: string;
+  // Frontend props (computed or defaulted)
   role?: 'student' | 'admin' | 'executive';
   bonus?: number;
+  points?: number;
   spinsAvailable?: number;
   bonusGrantCount?: number;
-  transactions?: Transaction[];
+  transactions?: any[];
+  Yid?: string;
+  adminId?: string;
+  registered?: any; // Can be array or object (Record<string, any>)
+  completed?: string[];
 }
 
 export interface Transaction {
@@ -51,6 +58,7 @@ export enum Gender {
 
 export interface EventData {
   id: string;
+  _id?: string; // Raw backend ID
   title: string;
   date: string;
   time: string;
@@ -65,6 +73,10 @@ export interface EventData {
   minMembers?: number;
   maxMembers?: number;
   points?: number;
+  prizes?: any; // e.g. { first: 30 }
+  registered?: string[]; // Array of User IDs (or Yids) registered for this event
+  rawRegistered?: any; // Full registration object from backend
+  completed?: string[]; // Array of User IDs who completed this event
 }
 
 export interface FeedbackItem {
