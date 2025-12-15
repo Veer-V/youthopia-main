@@ -1,17 +1,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, Clock, ShoppingBag, CheckCircle2, XCircle, History, List } from 'lucide-react';
+import { Check, X, Clock, ShoppingBag, CheckCircle2, XCircle, History, List, Search } from 'lucide-react';
 import Button from '../Button';
 import { useData, RedemptionRequest } from '../../contexts/DataContext';
 
 const Redemption: React.FC = () => {
     const { processRedemption, redemptions } = useData();
     const [activeTab, setActiveTab] = useState<'queue' | 'history'>('queue');
+    const [searchQuery, setSearchQuery] = useState('');
     const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
 
-    const pendingRequests = redemptions.filter(r => r.status === 'Pending');
-    const historyRequests = redemptions.filter(r => r.status !== 'Pending');
+    const filteredRedemptions = redemptions.filter(r => {
+        const query = searchQuery.toLowerCase();
+        return (
+            (r.user || '').toLowerCase().includes(query) ||
+            (r.userId || '').toLowerCase().includes(query)
+        );
+    });
+
+    const pendingRequests = filteredRedemptions.filter(r => r.status === 'Pending');
+    const historyRequests = filteredRedemptions.filter(r => r.status !== 'Pending');
 
     const handleAction = async (id: string, action: 'approve' | 'reject') => {
         const req = redemptions.find(r => r.id === id);
@@ -33,26 +42,41 @@ const Redemption: React.FC = () => {
     return (
         <div className="space-y-6 relative h-full">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                <h2 className="text-2xl font-bold text-slate-800">Redeemption Queue</h2>
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                    <h2 className="text-2xl font-bold text-slate-800 whitespace-nowrap">Redeemption Queue</h2>
+                </div>
 
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                    {/* Search Input */}
+                    <div className="relative flex-1 md:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search by Name or YID..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/20 outline-none text-sm transition-all"
+                        />
+                    </div>
 
-                {/* Toggle Tabs */}
-                <div className="bg-slate-100 p-1 rounded-xl flex shadow-sm border border-slate-200">
-                    <button
-                        onClick={() => setActiveTab('queue')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'queue' ? 'bg-white text-brand-purple shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                            }`}
-                    >
-                        <List size={16} /> Pending
-                        <span className="bg-brand-purple text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendingRequests.length}</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('history')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                            }`}
-                    >
-                        <History size={16} /> History
-                    </button>
+                    {/* Toggle Tabs */}
+                    <div className="bg-slate-100 p-1 rounded-xl flex shadow-sm border border-slate-200 shrink-0">
+                        <button
+                            onClick={() => setActiveTab('queue')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'queue' ? 'bg-white text-brand-purple shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                                }`}
+                        >
+                            <List size={16} /> <span className="hidden sm:inline">Pending</span>
+                            <span className="bg-brand-purple text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendingRequests.length}</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('history')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                                }`}
+                        >
+                            <History size={16} /> <span className="hidden sm:inline">History</span>
+                        </button>
+                    </div>
                 </div>
             </div>
             <h2 className="text-m text-blue-500 text-slate-800">It will take almost 2 mins for transaction to show and complete</h2>
@@ -93,6 +117,10 @@ const Redemption: React.FC = () => {
                                             <span className="text-slate-500">Student:</span>
                                             <span className="font-semibold text-slate-700">{req.user}</span>
                                         </div>
+                                        <div className="flex justify-between mb-1">
+                                            <span className="text-slate-500">YID:</span>
+                                            <span className="font-mono text-xs text-slate-500 bg-slate-200 px-1 rounded">{req.userId || 'N/A'}</span>
+                                        </div>
                                         <div className="flex justify-between">
                                             <span className="text-slate-500">Cost:</span>
                                             <span className="font-bold text-slate-900">{req.cost} pts</span>
@@ -132,8 +160,12 @@ const Redemption: React.FC = () => {
                                 className="col-span-full text-center py-20 text-slate-400 flex flex-col items-center"
                             >
                                 <CheckCircle2 size={48} className="text-green-100 mb-4" />
-                                <p className="font-medium text-slate-500">All caught up!</p>
-                                <p className="text-sm">No pending redemption requests.</p>
+                                <p className="font-medium text-slate-500">
+                                    {searchQuery ? 'No matching requests found.' : 'All caught up!'}
+                                </p>
+                                <p className="text-sm">
+                                    {searchQuery ? 'Try a different search term.' : 'No pending redemption requests.'}
+                                </p>
                             </motion.div>
                         )}
                     </motion.div>
@@ -158,7 +190,12 @@ const Redemption: React.FC = () => {
                                     <tr key={req.id} className="hover:bg-slate-50">
                                         <td className="p-3 pl-6 font-mono text-slate-400">{req.id}</td>
                                         <td className="p-3 font-semibold text-slate-800">{req.item}</td>
-                                        <td className="p-3 text-slate-600">{req.user}</td>
+                                        <td className="p-3 text-slate-600">
+                                            <div className="flex flex-col">
+                                                <span>{req.user}</span>
+                                                <span className="text-[10px] text-slate-400 font-mono">{req.userId}</span>
+                                            </div>
+                                        </td>
                                         <td className="p-3">
                                             <span className={`px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 w-fit ${req.status === 'Approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                                 {req.status === 'Approved' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
@@ -169,7 +206,9 @@ const Redemption: React.FC = () => {
                                     </tr>
                                 )) : (
                                     <tr>
-                                        <td colSpan={5} className="p-8 text-center text-slate-400">No history available.</td>
+                                        <td colSpan={5} className="p-8 text-center text-slate-400">
+                                            {searchQuery ? 'No matching records found in history.' : 'No history available.'}
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>
