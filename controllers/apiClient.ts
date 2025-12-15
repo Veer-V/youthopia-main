@@ -1,5 +1,5 @@
 
-export const API_BASE_URL = 'http://35.244.42.115:6001';
+export const API_BASE_URL = 'http://10.160.0.2:6001';
 
 export const apiClient = {
     get: async (endpoint: string) => {
