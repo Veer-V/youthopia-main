@@ -6,88 +6,9 @@ import Button from '../Button';
 import { useData, RedemptionRequest } from '../../contexts/DataContext';
 
 const Redemption: React.FC = () => {
-    const { processRedemption } = useData();
-    const [redemptions, setRedemptions] = useState<RedemptionRequest[]>([]);
+    const { processRedemption, redemptions } = useData();
     const [activeTab, setActiveTab] = useState<'queue' | 'history'>('queue');
     const [notification, setNotification] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
-
-    useEffect(() => {
-        const fetchRedemptions = async () => {
-            try {
-                const response = await fetch('http://35.244.42.115:6001/redeem');
-                const data = await response.json();
-
-                if (Array.isArray(data)) {
-                    const allRequests: RedemptionRequest[] = [];
-                    data.forEach((item: any) => {
-                        // 1. Process Pending Transactions
-                        if (item.transactions && typeof item.transactions === 'object') {
-                            Object.values(item.transactions).forEach((t: any) => {
-                                if (typeof t !== 'object' || !t || !t._id) return;
-
-                                let uName = 'Unknown User';
-                                let uId = '';
-
-                                if (typeof t.user === 'string') {
-                                    uId = t.user;
-                                } else if (t.user && typeof t.user === 'object') {
-                                    uName = t.user.name || 'Unknown User';
-                                    uId = t.user.Yid || t.user.id || t.user._id || '';
-                                }
-
-                                allRequests.push({
-                                    id: t._id,
-                                    user: uName,
-                                    userId: uId,
-                                    goodieId: item._id,
-                                    item: item.name || 'Unknown Item',
-                                    cost: Math.abs(t.points || 0),
-                                    status: 'Pending',
-                                    time: t.createdAt || new Date().toISOString()
-                                });
-                            });
-                        }
-
-                        // 2. Process Approved Transactions (History)
-                        if (item.approved && typeof item.approved === 'object') {
-                            Object.values(item.approved).forEach((t: any) => {
-                                if (typeof t !== 'object' || !t || !t._id) return;
-
-                                let uName = 'Unknown User';
-                                let uId = '';
-
-                                if (typeof t.user === 'string') {
-                                    uId = t.user;
-                                } else if (t.user && typeof t.user === 'object') {
-                                    uName = t.user.name || 'Unknown User';
-                                    uId = t.user.Yid || t.user.id || t.user._id || '';
-                                }
-
-                                allRequests.push({
-                                    id: t._id,
-                                    user: uName,
-                                    userId: uId,
-                                    goodieId: item._id,
-                                    item: item.name || 'Unknown Item',
-                                    cost: Math.abs(t.points || 0),
-                                    status: 'Approved',
-                                    time: t.createdAt || new Date().toISOString()
-                                });
-                            });
-                        }
-                    });
-                    setRedemptions(allRequests);
-                }
-            } catch (error) {
-                console.error("Error fetching redemptions:", error);
-            }
-        };
-
-        fetchRedemptions();
-        // Poll every 5 seconds to keep it fresh
-        const interval = setInterval(fetchRedemptions, 5000);
-        return () => clearInterval(interval);
-    }, []);
 
     const pendingRequests = redemptions.filter(r => r.status === 'Pending');
     const historyRequests = redemptions.filter(r => r.status !== 'Pending');
@@ -107,11 +28,6 @@ const Redemption: React.FC = () => {
         });
 
         setTimeout(() => setNotification(null), 3000);
-
-        // Re-fetch immediately
-        const response = await fetch('http://35.244.42.115:6001/redeem');
-        // We could just let polling handle it, but for UI responsiveness:
-        // (Simplified re-fetch logic omitted to keep diff clean, polling covers it)
     };
 
     return (
