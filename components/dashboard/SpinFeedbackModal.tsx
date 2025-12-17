@@ -68,7 +68,7 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.9, opacity: 0, y: 20 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="bg-white rounded-2xl p-6 max-w-md w-full relative z-10 shadow-xl overflow-hidden"
+                    className="bg-white rounded-2xl p-6 max-w-md w-full relative z-10 shadow-xl overflow-y-auto max-h-[90vh]"
                 >
                     {/* Decorative Background */}
                     <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-purple/10 to-brand-pink/10 rounded-full blur-3xl -z-10" />
@@ -109,8 +109,8 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
                                     <Star
                                         size={40}
                                         className={`transition-all ${star <= (hoverRating || rating)
-                                                ? 'fill-yellow-400 text-yellow-400'
-                                                : 'text-slate-300'
+                                            ? 'fill-yellow-400 text-yellow-400'
+                                            : 'text-slate-300'
                                             }`}
                                     />
                                 </motion.button>
@@ -140,8 +140,8 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => setFavoriteAspect(aspect.value)}
                                     className={`p-4 rounded-2xl border-2 transition-all text-center ${favoriteAspect === aspect.value
-                                            ? 'border-brand-purple bg-brand-purple/10 shadow-lg'
-                                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                                        ? 'border-brand-purple bg-brand-purple/10 shadow-lg'
+                                        : 'border-slate-200 hover:border-slate-300 bg-white'
                                         }`}
                                 >
                                     <div className="text-3xl mb-2">{aspect.emoji}</div>
@@ -164,8 +164,8 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
                                     whileTap={{ scale: 0.95 }}
                                     onClick={() => setWouldRecommend(rec.value)}
                                     className={`p-4 rounded-2xl transition-all text-center text-white font-bold ${wouldRecommend === rec.value
-                                            ? `${rec.color} shadow-lg ring-4 ring-offset-2 ring-${rec.color.split('-')[1]}-300`
-                                            : 'bg-slate-300 hover:bg-slate-400'
+                                        ? `${rec.color} shadow-lg ring-4 ring-offset-2 ring-${rec.color.split('-')[1]}-300`
+                                        : 'bg-slate-300 hover:bg-slate-400'
                                         }`}
                                 >
                                     <div className="text-2xl mb-1">{rec.emoji}</div>
@@ -182,8 +182,8 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
                         onClick={handleSubmit}
                         disabled={!isFormValid}
                         className={`shadow-xl transition-all ${isFormValid
-                                ? 'shadow-brand-purple/30 hover:shadow-brand-purple/50'
-                                : 'opacity-50 cursor-not-allowed'
+                            ? 'shadow-brand-purple/30 hover:shadow-brand-purple/50'
+                            : 'opacity-50 cursor-not-allowed'
                             }`}
                     >
                         {isFormValid ? (
