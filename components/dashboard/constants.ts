@@ -6,7 +6,7 @@ export const IMAGES = {
   music: "../image/singing.jpg",
   theatre: "../image/skit.jpg",
   art: "../image/canvapainting.jpg",
-  tech: "../image/deck.jpg",
+  tech: "../image/ThinkingOutofTheBox.webp",
   digitalart: "../image/digitalart.jpg",
   speaker: "../image/elocution.jpg",
   writing: "../image/creativeWriting.webp",
