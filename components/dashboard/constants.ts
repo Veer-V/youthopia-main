@@ -794,5 +794,25 @@ export const events: EventData[] = [
     ],
     image: IMAGES.Arttherpy,
     points: 70
+  },
+  {
+    id: "38",
+    title: "The Dot Puzzle",
+    date: "Dec 22 & 23",
+    time: "All Day",
+    loc: "Main Stage",
+    category: "Engagement",
+    imageColor: "from-pink-500 to-rose-500",
+    quote: "Sometimes the solution appears only when you think beyond the dots.",
+    description: "Foster creative problem-solving and creative & divergent thinking",
+    rules: [
+      "Provide 9-dot puzzle sheets",
+      "Ask participants to join the dots without lifting their pens",
+      "Optionally show the solution and discuss strategy"
+    ],
+    image: "../image/connectTheDot.png",
+    isTeamEvent: false,
+    points: 0,
+    prizes: { first: 30 }
   }
 ];

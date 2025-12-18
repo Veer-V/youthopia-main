@@ -252,13 +252,13 @@ const MasterControl: React.FC = () => {
                >
                   <Calendar size={16} /> Event Control
                </button>
-               {/* <button
+               <button
                   onClick={listAllPasscodes}
                   className="px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-50 flex items-center gap-2"
                   title="List Admin Keys in System Log"
                >
                   <Key size={16} /> Keys
-               </button> */}
+               </button>
                {/* <button
                   onClick={() => setActiveTab('global')}
                   className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'global' ? 'bg-slate-800 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
