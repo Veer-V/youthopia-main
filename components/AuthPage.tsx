@@ -107,7 +107,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack, onLogin }) => {
 
       // 4. Login Logic
       if (activeTab === 'login') {
-        const { user, error: loginError } = await login(formData.email, formData.password);
+        const { user, error: loginError } = await login(formData.phone, formData.password);
 
         if (user) {
           onLogin(user, user.bonus || 0);
