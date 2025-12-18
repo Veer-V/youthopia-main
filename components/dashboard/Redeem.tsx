@@ -36,10 +36,10 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
   }, [toast]);
 
   const items: RedeemItem[] = [
-    { name: 'Diary', cost: 750, image: '/image/diary.png', _id: "693e7b4c47c3a159b04db138" },
-    { name: 'Sipper', cost: 550, image: '/image/sipper.png', _id: "693ea07fbe44c513834f77b5" },
-    { name: 'Keychain', cost: 350, image: '/image/keychain.png', _id: "693ea20ca1825e0de8d94c2f" },
-    { name: 'Badge', cost: 150, image: '/image/badge.png', _id: "693ea2894e50bc7eb4baf4f4" },
+    { name: 'Diary', cost: 750, image: '/image/diary.png', _id: "6943f8700e58eaffcfe40d06" },
+    { name: 'Sipper', cost: 550, image: '/image/sipper.png', _id: "6943f88b0e58eaffcfe41095" },
+    { name: 'Keychain', cost: 350, image: '/image/keychain.png', _id: "6943f835687f16312607ab22 " },
+    { name: 'Badge', cost: 150, image: '/image/badge.png', _id: "6943f8135ae79efb2d959002" },
   ];
 
   const handleConfirm = () => {
