@@ -18,8 +18,9 @@ interface EnrolledStudent {
 }
 
 const MasterControl: React.FC = () => {
-   const { events, users, registrations, completedEvents, updateUserBonus, markEventCompleted, feedbacks } = useData();
+   const { events, users, user, registrations, completedEvents, updateUserBonus, markEventCompleted, feedbacks } = useData();
    const [activeTab, setActiveTab] = useState<'global' | 'events'>('events');
+
    const [systemState, setSystemState] = useState({
       registrationsOpen: true,
       maintenanceMode: false,
@@ -222,10 +223,18 @@ const MasterControl: React.FC = () => {
       addLog("Broadcast message sent to all active sessions.");
    };
 
-   const filteredEvents = events.filter(e =>
-      e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.category.toLowerCase().includes(searchQuery.toLowerCase())
-   );
+   const filteredEvents = events.filter(e => {
+      // Filter by Event Assignment (for Admins)
+      if (user?.role === 'admin' && user.event_assigned) {
+         if (user.event_assigned !== 'all' && e.title !== user.event_assigned) {
+            return false;
+         }
+      }
+
+      // Filter by Search Query
+      return e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         e.category.toLowerCase().includes(searchQuery.toLowerCase());
+   });
 
    return (
       <div className="space-y-6">

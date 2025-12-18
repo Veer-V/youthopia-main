@@ -66,63 +66,13 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack, onLogin }) => {
       // 2. Admin/Executive Login
       if (activeTab === 'admin') {
         const inputId = formData.adminId.trim();
-        let emailToAuth = '';
 
-        // Explicitly route based on ID
-        if (inputId === '123456' && formData.password === '123456') {
-          const mockAdmin: UserData = {
-            id: 'admin_123',
-            name: 'Admin',
-            email: 'admin@youthopia.com',
-            institute: 'System',
-            class: 'N/A',
-            stream: 'N/A',
-            phone: '1234567890',
-            age: '30',
-            gender: 'Other',
-            role: 'admin',
-            bonus: 1000
-          };
-          onLogin(mockAdmin);
-          setIsLoading(false);
-          return;
-        }
-
-        if (inputId === '789' && formData.password === '0987') {
-          const mockExec: UserData = {
-            id: 'exec_789',
-            name: 'Executive',
-            email: 'executive@youthopia.com',
-            institute: 'System',
-            class: 'N/A',
-            stream: 'N/A',
-            phone: '9876543210',
-            age: '25',
-            gender: 'Other',
-            role: 'executive',
-            bonus: 500
-          };
-          onLogin(mockExec);
-          setIsLoading(false);
-          return;
-        }
-
-        if (inputId === '123456' || inputId.toLowerCase() === 'admin' || inputId.toLowerCase() === 'admin@youthopia.com') {
-          emailToAuth = 'admin@youthopia.com';
-        } else if (inputId === '789' || inputId.toLowerCase() === 'executive' || inputId.toLowerCase() === 'executive@youthopia.com') {
-          emailToAuth = 'executive@youthopia.com';
-        } else {
-          setError("Invalid Admin or Executive ID.");
-          setIsLoading(false);
-          return;
-        }
-
-        const { user, error: loginError } = await login(emailToAuth, formData.password);
+        const { user, error: loginError } = await login(inputId, formData.password);
 
         if (user) {
           onLogin(user);
         } else {
-          setError(loginError || "Invalid Password.");
+          setError(loginError || "Invalid Credentials.");
         }
         setIsLoading(false);
         return;

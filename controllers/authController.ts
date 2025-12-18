@@ -69,13 +69,8 @@ export const AuthController = {
           name: response.admin_name || email,
           email: email, // Placeholder or from response
           role: 'admin',
-          phone: '',
-          institute: 'Admin',
-          stream: '',
-          class: '',
-          gender: '',
-          age: '',
           spinsAvailable: 0,
+          event_assigned: response.event_assigned,
           ...response // Spread any other fields
         };
 

@@ -9,12 +9,14 @@ export interface UserData {
   _id?: string; // Raw backend ID
   name: string;
   email: string;
-  institute: string;
-  class: string;
-  stream: string;
-  phone: string;
-  age: string;
-  gender: string;
+  institute?: string;
+  class?: string;
+  stream?: string;
+  phone?: string;
+  age?: string;
+  gender?: string;
+  admin_name?: string; // For admin users
+  event_assigned?: string; // For master control event filtering
   // Frontend props (computed or defaulted)
   role?: 'student' | 'admin' | 'executive';
   bonus?: number;
