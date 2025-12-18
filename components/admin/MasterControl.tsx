@@ -28,15 +28,28 @@ const MasterControl: React.FC = () => {
    });
 
    // System Logs
-   const [logs, setLogs] = useState<string[]>([]);
+   const [logs, setLogs] = useState<string[]>(() => {
+      try {
+         const saved = localStorage.getItem('admin_system_logs');
+         return saved ? JSON.parse(saved) : [];
+      } catch (e) {
+         return [];
+      }
+   });
    const logsEndRef = useRef<HTMLDivElement>(null);
 
    const addLog = (msg: string) => {
       const time = new Date().toLocaleTimeString();
-      setLogs(prev => [...prev, `[${time}] SYSTEM: ${msg}`]);
+      setLogs(prev => {
+         const newLogs = [...prev, `[${time}] SYSTEM: ${msg}`];
+         // Keep only last 100 logs to prevent overflow
+         if (newLogs.length > 100) newLogs.shift();
+         return newLogs;
+      });
    };
 
    useEffect(() => {
+      localStorage.setItem('admin_system_logs', JSON.stringify(logs));
       logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
    }, [logs]);
 
