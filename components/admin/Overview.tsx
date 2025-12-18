@@ -134,7 +134,7 @@ const Overview: React.FC = () => {
                 {Object.entries(stat.categories).map(([cat, count]) => (
                   <div key={cat} className="flex justify-between text-xs">
                     <span className="text-slate-500">{cat}</span>
-                    <span className="font-bold text-slate-700">{count}</span>
+                    <span className="font-bold text-slate-700">{count as number}</span>
                   </div>
                 ))}
               </div>
