@@ -222,11 +222,11 @@ const AuthPage: React.FC<AuthPageProps> = ({ onBack, onLogin }) => {
                 className="space-y-4"
               >
                 <Input
-                  placeholder="Email or Phone"
+                  placeholder="Enter your registered Phone"
                   type="text"
-                  name="email"
+                  name="phone"
                   icon={<User size={18} />}
-                  value={formData.email}
+                  value={formData.phone}
                   onChange={handleInputChange}
                   required
                 />
