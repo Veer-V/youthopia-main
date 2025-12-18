@@ -5,6 +5,8 @@ import { Check, Star, Award, ThumbsUp, MessageSquare, ListFilter } from 'lucide-
 // import { SimpleBarChart } from './Charts'; // Removed usage if not needed for spin or kept for events
 import { useData } from '../../contexts/DataContext';
 
+import * as XLSX from 'xlsx';
+
 const Feedback: React.FC = () => {
    const { feedbacks, spinFeedbacks } = useData();
    const [activeTab, setActiveTab] = useState<'events' | 'spins'>('events');
@@ -54,34 +56,89 @@ const Feedback: React.FC = () => {
    const feedItems = feedbacks.slice().reverse().slice(0, 50); // Show last 50
    const spinFeedItems = spinFeedbacks.slice().reverse().slice(0, 50);
 
-   const sentimentData = [20, 45, 60, 80, 50, 65, 30]; // Keep chart static for now 
-   const sentimentLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+   const handleExport = () => {
+      let dataToExport: any[] = [];
+      let sheetName = '';
+
+      if (activeTab === 'events') {
+         sheetName = 'Event_Feedback';
+         dataToExport = feedbacks.map(f => ({
+            'Event Name': f.eventName,
+            'User Name': f.userName,
+            'Email': f.userEmail,
+            'Emoji': f.emoji,
+            'Time': f.timestamp
+         }));
+      } else {
+         sheetName = 'Spin_Feedback';
+         dataToExport = spinFeedbacks.map(f => {
+            // Flatten responses
+            const base = {
+               'User Name': f.userName,
+               'Email': f.userEmail,
+               'Category': f.category || 'Feedback',
+               'Prize': f.prizeAmount,
+               'Time': f.timestamp
+            };
+
+            // Add questions as columns
+            const dynamicQs: any = {};
+            if (f.responses) {
+               f.responses.forEach((r, idx) => {
+                  dynamicQs[`Question ${idx + 1}`] = r.questionText;
+                  dynamicQs[`Answer ${idx + 1}`] = formatAnswer(r.answer);
+               });
+            }
+            return { ...base, ...dynamicQs };
+         });
+      }
+
+      if (dataToExport.length === 0) {
+         alert("No data to export");
+         return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+      XLSX.writeFile(workbook, `${sheetName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+   };
 
    return (
       <div className="space-y-8">
          <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-slate-800">Feedback Analytics</h2>
 
-            {/* Tab Switcher */}
-            <div className="flex gap-2 bg-slate-100 p-1 rounded-xl">
+            <div className="flex gap-2">
+               {/* Export Button */}
                <button
-                  onClick={() => setActiveTab('events')}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === 'events'
-                     ? 'bg-white text-brand-purple shadow-sm'
-                     : 'text-slate-500 hover:text-slate-700'
-                     }`}
+                  onClick={handleExport}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold text-sm transition-all shadow-sm flex items-center gap-2"
                >
-                  Event Feedback
+                  Export to Excel
                </button>
-               <button
-                  onClick={() => setActiveTab('spins')}
-                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === 'spins'
-                     ? 'bg-white text-brand-purple shadow-sm'
-                     : 'text-slate-500 hover:text-slate-700'
-                     }`}
-               >
-                  Spin Feedback ({spinFeedbacks.length})
-               </button>
+
+               {/* Tab Switcher */}
+               <div className="flex gap-2 bg-slate-100 p-1 rounded-xl">
+                  <button
+                     onClick={() => setActiveTab('events')}
+                     className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === 'events'
+                        ? 'bg-white text-brand-purple shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                  >
+                     Event Feedback
+                  </button>
+                  <button
+                     onClick={() => setActiveTab('spins')}
+                     className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${activeTab === 'spins'
+                        ? 'bg-white text-brand-purple shadow-sm'
+                        : 'text-slate-500 hover:text-slate-700'
+                        }`}
+                  >
+                     Spin Feedback ({spinFeedbacks.length})
+                  </button>
+               </div>
             </div>
          </div>
 
@@ -255,7 +312,7 @@ const Feedback: React.FC = () => {
                </div>
             </>
          )}
-      </div>
+      </div >
    );
 };
 

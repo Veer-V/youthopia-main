@@ -5,56 +5,83 @@ import { apiClient } from './apiClient';
 export const AuthController = {
   login: async (email: string, password?: string): Promise<{ user: UserData | null, error?: string }> => {
     try {
-      // API expects mobile.
-      const mobile = Number(email);
-      if (isNaN(mobile)) {
-        // If it's not a number, we can't login with the current API spec which requires 'mobile'
-        return { user: null, error: 'Login requires a valid mobile number' };
-      }
+      // Determine login type based on input
+      // If numeric, assume Student Mobile Login
+      const isMobile = /^\d+$/.test(email);
 
-      const response = await apiClient.post('/user/login', {
-        mobile,
-        password
-      });
+      if (isMobile) {
+        const mobile = Number(email);
+        const response = await apiClient.post('/user/login', {
+          mobile,
+          password
+        });
 
-      if (!response) {
-        return { user: null, error: 'User not found' };
-      }
-
-      // Map API response to UserData
-      // Response might vary, adapting as best as possible
-      const mappedUser: UserData = {
-        ...response, // Persist all API fields
-        id: response._id || response.id,
-        Yid: response.Yid || response.id || response._id,
-        name: response.name,
-        email: response.email,
-        phone: response.mobile?.toString() || response.phone,
-        institute: response.institute,
-        stream: response.stream,
-        class: response.class,
-        gender: response.gender,
-        age: response.age?.toString(),
-        role: 'student', // Default
-        // bonus: response.points || 0, // Removed at user request
-        spinsAvailable: response.spinsAvailable || 0
-      };
-
-      // Fetch points if ID is available
-      if (mappedUser.id) {
-        try {
-          // Link: (get) http://35.244.42.115:6001/user/points/161C03
-          const pointsData = await apiClient.get(`/user/points/${mappedUser.id}`);
-          if (pointsData && typeof pointsData.points === 'number') {
-            // mappedUser.bonus = pointsData.points;
-            mappedUser.points = pointsData.points;
-          }
-        } catch (e) {
-          console.warn("Could not fetch user points", e);
+        if (!response) {
+          return { user: null, error: 'User not found' };
         }
+
+        // Map API response to UserData
+        const mappedUser: UserData = {
+          ...response,
+          id: response._id || response.id,
+          Yid: response.Yid || response.id || response._id,
+          name: response.name,
+          email: response.email,
+          phone: response.mobile?.toString() || response.phone,
+          institute: response.institute,
+          stream: response.stream,
+          class: response.class,
+          gender: response.gender,
+          age: response.age?.toString(),
+          role: 'student', // Default
+          spinsAvailable: response.spinsAvailable || 0
+        };
+
+        // Fetch points if ID is available
+        if (mappedUser.id) {
+          try {
+            const pointsData = await apiClient.get(`/user/points/${mappedUser.id}`);
+            if (pointsData && typeof pointsData.points === 'number') {
+              mappedUser.points = pointsData.points;
+            }
+          } catch (e) {
+            console.warn("Could not fetch user points", e);
+          }
+        }
+
+        return { user: mappedUser };
+      } else {
+        // Assume Admin Login
+        // POST /admin/login { admin_name, password }
+        console.log("Attempting Admin Login for:", email);
+        const response = await apiClient.post('/admin/login', {
+          admin_name: email,
+          password
+        });
+
+        if (!response) {
+          return { user: null, error: 'Admin login failed' };
+        }
+
+        // Map Admin Response
+        const adminUser: UserData = {
+          id: response._id || `admin_${Date.now()}`,
+          name: response.admin_name || email,
+          email: email, // Placeholder or from response
+          role: 'admin',
+          phone: '',
+          institute: 'Admin',
+          stream: '',
+          class: '',
+          gender: '',
+          age: '',
+          spinsAvailable: 0,
+          ...response // Spread any other fields
+        };
+
+        return { user: adminUser };
       }
 
-      return { user: mappedUser };
     } catch (e: any) {
       console.error("Login Error", e);
       return { user: null, error: e.message || 'Login failed' };
