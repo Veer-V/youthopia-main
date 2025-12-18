@@ -84,6 +84,18 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
     }
   }, [toast]);
 
+  // Local Storage for Spin Sequence
+  const [spinsCompleted, setSpinsCompleted] = useState(0);
+
+  useEffect(() => {
+    if (user?.email) {
+      const stored = localStorage.getItem(`spinCount_${user.email}`);
+      if (stored) {
+        setSpinsCompleted(parseInt(stored));
+      }
+    }
+  }, [user?.email]);
+
   const handleSpin = () => {
     if (isSpinning || displaySpins <= 0) return;
     setIsSpinning(true);
@@ -115,6 +127,13 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
     // Call spin point endpoint (consume spin / transaction)
     onSpinUsed(pendingPrize);
 
+    // Update Local Storage Count
+    if (user?.email) {
+      const newCount = spinsCompleted + 1;
+      setSpinsCompleted(newCount);
+      localStorage.setItem(`spinCount_${user.email}`, newCount.toString());
+    }
+
     // Close feedback modal
     setShowFeedbackModal(false);
 
@@ -132,6 +151,8 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
       {/* Header Bonus Display */}
       <div className="text-center pt-4">
         <motion.div
+          // ... (rest of the file until the SpinFeedbackModal prop update)
+
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
@@ -296,6 +317,7 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
         prizeAmount={pendingPrize}
         userName={userName}
         userEmail={userEmail}
+        spinNumber={spinsCompleted + 1}
         onSubmit={handleFeedbackSubmit}
       />
 

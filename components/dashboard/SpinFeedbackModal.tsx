@@ -4,35 +4,10 @@ import { Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import Button from '../Button';
 import { SpinFeedbackResponse } from '../../types';
 
-interface SpinFeedbackModalProps {
-    isOpen: boolean;
-    prizeAmount: number;
-    userName: string;
-    userEmail: string;
-    onSubmit: (responses: SpinFeedbackResponse['responses'], category: string) => void;
-}
-
-type QuestionType = 'single' | 'multiple' | 'matrix';
-
-interface Question {
-    id: string;
-    text: string;
-    type: QuestionType;
-    options?: string[];
-    rows?: string[]; // For matrix
-    columns?: string[]; // For matrix
-}
-
-interface QuestionSet {
-    id: string;
-    title: string;
-    questions: Question[];
-}
-
 const QUESTION_SETS: QuestionSet[] = [
     {
         id: 'set1',
-        title: 'Social Media Usage',
+        title: 'Social Media Usage and Habits',
         questions: [
             {
                 id: 'Q1',
@@ -56,53 +31,20 @@ const QUESTION_SETS: QuestionSet[] = [
     },
     {
         id: 'set2',
-        title: 'Social Media & Self-Reflection',
+        title: 'Past Experience and Mental Health',
         questions: [
             {
-                id: 'Q4',
-                text: 'In the past 6 months, has social media made you feel any of the following? (Select all that apply)',
-                type: 'multiple',
-                options: [
-                    'More confident about myself',
-                    'Anxious about my appearance',
-                    'Left out or excluded',
-                    'Pressure to present a perfect image',
-                    'Inspired or motivated',
-                    'Inadequate compared to others',
-                    'Connected to friends/community',
-                    'None of the above'
-                ]
-            },
-            {
-                id: 'Q5',
+                id: 'Q1',
                 text: 'How often do you find yourself replaying past negative experiences in your mind?',
                 type: 'single',
                 options: ['Never or rarely', 'Sometimes (1-2 times per week)', 'Often (3-5 times per week)', 'Very often (almost daily)', 'Constantly (multiple times daily)']
             },
             {
-                id: 'Q6',
-                text: 'When you think about difficult situations from your past, do you:',
-                type: 'single',
-                options: [
-                    'Actively try to understand and move forward',
-                    'Think about them occasionally but don\'t dwell',
-                    'Find it difficult to stop thinking about them',
-                    'Feel stuck reliving the same thoughts repeatedly',
-                    'Intentionally revisit them to process feelings'
-                ]
-            }
-        ]
-    },
-    {
-        id: 'set3',
-        title: 'Past Experiences & Body Image',
-        questions: [
-            {
-                id: 'Q7',
+                id: 'Q2',
                 text: 'Which statement best describes how you relate to your past negative experiences?',
                 type: 'single',
                 options: [
-                    'They are part of my history, but don\'t define who I am',
+                    'They are part of my history, but don’t define who I am',
                     'I have learned from them and mostly moved on',
                     'I think about them regularly and they influence my current identity',
                     'They are central to understanding who I am and how I see myself',
@@ -110,7 +52,7 @@ const QUESTION_SETS: QuestionSet[] = [
                 ]
             },
             {
-                id: 'Q8',
+                id: 'Q3',
                 text: 'In the past month, have you repeatedly thought about negative experiences affecting any of the following? (Select all that apply)',
                 type: 'multiple',
                 options: [
@@ -123,47 +65,68 @@ const QUESTION_SETS: QuestionSet[] = [
                     'My sense of personal agency/control',
                     'None of the above'
                 ]
+            }
+        ]
+    },
+    {
+        id: 'set3',
+        title: 'Toxic Relationship and Mental Health',
+        questions: [
+            {
+                id: 'Q1',
+                text: 'How have toxic relationships affected your mental health? (Select ALL that apply)',
+                type: 'multiple',
+                options: [
+                    'Anxiety, panic attacks, or constant worry',
+                    'Depression or persistent sadness',
+                    'Low self-esteem or loss of identity',
+                    'Difficulty trusting others',
+                    'post-traumatic stress symptoms (flashbacks, nightmares, hypervigilance)',
+                    'Sleep disturbances',
+                    'Self-harm or suicidal thoughts',
+                    'eating disorders or disordered eating',
+                    'Substance use/abuse',
+                    'Physical symptoms (headaches, stomach issues, exhaustion)',
+                    'Difficulty setting boundaries',
+                    'People-pleasing or fear of conflict',
+                    'No significant mental health impact'
+                ]
             },
             {
-                id: 'Q9',
-                text: 'On average, how many hours per day do you spend viewing beauty, fashion, fitness, or lifestyle content on social media?',
+                id: 'Q2',
+                text: 'How would you rate your current self-esteem/self-worth in the context of your toxic relationship experiences?',
                 type: 'single',
-                options: ['Less than 30 minutes', '30 minutes to 1 hour', '1-2 hours', '3-4 hours', 'More than 4 hours']
+                options: ['Very Poor', 'Poor', 'Neutral', 'Good', 'Excellent']
+            },
+            {
+                id: 'Q3',
+                text: 'What factors have made it harder to leave or avoid toxic relationships? (Select ALL that apply)',
+                type: 'multiple',
+                options: [
+                    'Financial dependence',
+                    'Fear of the person\'s reaction or retaliation',
+                    'Cultural or religious expectations',
+                    'Family/community pressure to maintain relationship',
+                    'Still loved them / hoped they would change',
+                    'Low self-worth (believed I deserved it)',
+                    'Didnt recognize it was toxic until later',
+                    'Lack of support system or resources',
+                    'Shared living situation or children involved',
+                    'Gender, race, or other identity factors',
+                    'Mental health challenges or past trauma',
+                    'Disability or chronic illness',
+                    'Immigration status or language barriers',
+                    'Not applicable'
+                ]
             }
         ]
     },
     {
         id: 'set4',
-        title: 'Beauty Standards & Comparison',
+        title: 'Social Media and Self-esteem',
         questions: [
             {
-                id: 'Q10',
-                text: 'Which beauty standards do you feel most pressured by? (Select all that apply)',
-                type: 'multiple',
-                options: [
-                    'Fair/light skin tone',
-                    'Slim body type',
-                    'Western facial features',
-                    'Traditional Indian beauty ideals',
-                    'Influencer/celebrity aesthetics',
-                    'Perfect skin (acne-free, blemish-free)',
-                    'Specific body measurements',
-                    'None of the above'
-                ]
-            },
-            {
-                id: 'Q11',
-                text: 'How often do you compare your appearance to:',
-                type: 'matrix',
-                rows: [
-                    'Indian celebrities/influencers',
-                    'International/Western celebrities/influencers',
-                    'Friends and peers in real life'
-                ],
-                columns: ['Never', 'Rarely', 'Sometimes', 'Often', 'Always']
-            },
-            {
-                id: 'Q12',
+                id: 'Q1',
                 text: 'In the past 6 months, has social media content about beauty/appearance made you feel: (Select all that apply)',
                 type: 'multiple',
                 options: [
@@ -176,69 +139,69 @@ const QUESTION_SETS: QuestionSet[] = [
                     'Inspired and confident',
                     'No significant impact'
                 ]
-            }
-        ]
-    },
-    {
-        id: 'set5',
-        title: 'Relationships & Mental Health',
-        questions: [
+            },
             {
-                id: 'Q13',
-                text: 'How have toxic relationships affected your mental health? (Select all that apply)',
+                id: 'Q2',
+                text: 'Which beauty standards do you feel most pressured by? (Select all that apply)',
                 type: 'multiple',
                 options: [
-                    'Anxiety, panic attacks, or constant worry',
-                    'Depression or persistent sadness',
-                    'Low self-esteem or loss of identity',
-                    'Difficulty trusting others',
-                    'Post-traumatic stress symptoms',
-                    'Sleep disturbances',
-                    'Self-harm or suicidal thoughts',
-                    'Eating disorders or disordered eating',
-                    'Substance use/abuse',
-                    'Physical symptoms',
-                    'Difficulty setting boundaries',
-                    'People-pleasing or fear of conflict',
-                    'No significant mental health impact'
+                    'Fair/light skin tone',
+                    'Slim body type',
+                    'Western facial features',
+                    'Traditional Indian beauty ideals (long hair, specific body proportions)',
+                    'Influencer/celebrity aesthetics',
+                    'Perfect skin (acne-free, blemish-free)',
+                    'Specific body measurements',
+                    'None of the above'
                 ]
             },
             {
-                id: 'Q14',
-                text: 'How would you rate your current self-esteem/self-worth in the context of your toxic relationship experiences?',
-                type: 'single',
-                options: ['Very Poor', 'Poor', 'Neutral', 'Good', 'Excellent']
-            },
-            {
-                id: 'Q15',
-                text: 'What factors have made it harder to leave or avoid toxic relationships? (Select all that apply)',
-                type: 'multiple',
-                options: [
-                    'Financial dependence',
-                    'Fear of the person\'s reaction or retaliation',
-                    'Cultural or religious expectations',
-                    'Family/community pressure',
-                    'Still loved them / hoped they would change',
-                    'Low self-worth (believed I deserved it)',
-                    'Didn\'t recognize it was toxic until later',
-                    'Lack of support system or resources',
-                    'Shared living situation or children involved',
-                    'Gender, race, or other identity factors',
-                    'Mental health challenges or past trauma',
-                    'Disability or chronic illness',
-                    'Immigration status or language barriers',
-                    'Not applicable'
-                ]
+                id: 'Q3',
+                text: 'How often do you compare your appearance to:',
+                type: 'matrix',
+                rows: [
+                    'Indian celebrities/influencers',
+                    'International/Western celebrities/influencers',
+                    'Friends and peers in real life'
+                ],
+                columns: ['Never', 'Rarely', 'Sometimes', 'Often', 'Always']
             }
         ]
     }
 ];
+
+interface SpinFeedbackModalProps {
+    isOpen: boolean;
+    prizeAmount: number;
+    userName: string;
+    userEmail: string;
+    spinNumber?: number; // Added to determine the question set
+    onSubmit: (responses: SpinFeedbackResponse['responses'], category: string) => void;
+}
+
+type QuestionType = 'single' | 'multiple' | 'matrix';
+
+interface Question {
+    id: string;
+    text: string;
+    type: QuestionType;
+    options?: string[];
+    rows?: string[]; // For matrix
+    columns?: string[]; // For matrix
+}
+
+interface QuestionSet {
+    id: string;
+    title: string;
+    questions: Question[];
+}
 
 const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
     isOpen,
     prizeAmount,
     userName,
     userEmail,
+    spinNumber = 1,
     onSubmit
 }) => {
     const [currentSet, setCurrentSet] = useState<QuestionSet | null>(null);
@@ -248,14 +211,17 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
     // Reset when opening
     useEffect(() => {
         if (isOpen) {
-            // Pick a random set
-            const randomSet = QUESTION_SETS[Math.floor(Math.random() * QUESTION_SETS.length)];
-            setCurrentSet(randomSet);
+            // Select set based on spinNumber (1-based index)
+            // Ensure spinNumber is at least 1 to avoid negative index
+            const effectiveSpinNum = Math.max(1, spinNumber);
+            const setIndex = (effectiveSpinNum - 1) % QUESTION_SETS.length;
+            setCurrentSet(QUESTION_SETS[setIndex]);
+
             // Clear answers
             setAnswers({});
             setTouched({});
         }
-    }, [isOpen]);
+    }, [isOpen, spinNumber]);
 
     const handleSingleChange = (qId: string, value: string) => {
         setAnswers(prev => ({ ...prev, [qId]: value }));
