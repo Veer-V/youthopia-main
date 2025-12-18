@@ -34,14 +34,12 @@ const Help: React.FC = () => {
                     <div className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Reach out to</div>
                     <div className="flex flex-col items-center md:items-end gap-1">
                         <div className="flex flex-wrap justify-center md:justify-end gap-2 text-lg md:text-xl font-bold text-slate-900">
-                            <a href="tel:9619985616" className="hover:text-brand-purple transition-colors">9619985616</a>
+                            <a href="tel:Mobile 1" className="hover:text-brand-purple transition-colors">Mobile 1</a>
                             <span className="text-slate-300">/</span>
-                            <a href="tel:9321549715" className="hover:text-brand-purple transition-colors">9321549715</a>
+                            <a href="tel:Mobile 2" className="hover:text-brand-purple transition-colors">Mobile 2</a>
                         </div>
                         <div className="flex flex-wrap justify-center md:justify-end gap-2 text-lg md:text-xl font-bold text-slate-900">
-                            <a href="tel:8482878322" className="hover:text-brand-purple transition-colors">8482878322</a>
-                            <span className="text-slate-300">/</span>
-                            <a href="tel:8177951082" className="hover:text-brand-purple transition-colors">8177951082</a>
+                            <a href="mailto:fest.technical2025@gmail.com" className="hover:text-brand-purple transition-colors">fest.technical2025@gmail.com</a>
                         </div>
                     </div>
                 </div>
