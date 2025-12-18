@@ -167,6 +167,38 @@ const QUESTION_SETS: QuestionSet[] = [
                 columns: ['Never', 'Rarely', 'Sometimes', 'Often', 'Always']
             }
         ]
+    },
+    {
+        id: 'set5',
+        title: 'Your Mental Health',
+        questions: [
+            {
+                id: 'Q1',
+                text: 'When you experience emotional or mental distress, whom do you usually reach out to for support?',
+                type: 'single',
+                options: [
+                    'Friends',
+                    'Family',
+                    'Psychologist / Counselor',
+                    'Teacher / Mentor',
+                    'No one'
+                ]
+            },
+            {
+                id: 'Q2',
+                text: 'What kind of mental health concerns do you most often seek help or guidance for?',
+                type: 'single',
+                options: [
+                    'Personal relationship problems',
+                    'Family issues',
+                    'Academic pressure or performance stress',
+                    'Career or future-related anxiety',
+                    'Loneliness or low self-esteem',
+                    'Anxiety, sadness, or overthinking',
+                    'body image + social bullying'
+                ]
+            }
+        ]
     }
 ];
 

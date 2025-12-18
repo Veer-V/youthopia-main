@@ -97,6 +97,12 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
   }, [user?.email]);
 
   const handleSpin = () => {
+    // Check local cap
+    if (spinsCompleted >= 5) {
+      setToast({ message: "You have reached the maximum of 5 spins!", type: 'error' });
+      return;
+    }
+
     if (isSpinning || displaySpins <= 0) return;
     setIsSpinning(true);
     // onSpinUsed(); // Moved to feedback submit as per request
@@ -279,7 +285,12 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
           </div>
 
           <div className="text-center px-4">
-            {displaySpins > 0 ? (
+            {spinsCompleted >= 5 ? (
+              <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700">
+                <p className="text-slate-300 font-bold">Max Limit Reached (5/5)</p>
+                <p className="text-xs text-slate-500 mt-1">Thank you for participating!</p>
+              </div>
+            ) : displaySpins > 0 ? (
               <Button
                 variant="secondary"
                 fullWidth
