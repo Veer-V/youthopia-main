@@ -95,7 +95,11 @@ export interface SpinFeedbackResponse {
   userName: string;
   timestamp: string;
   prizeAmount: number;
-  rating: number; // 1-5 stars
-  favoriteAspect: 'Events' | 'Prizes' | 'Community' | 'Organization' | 'Other';
-  wouldRecommend: 'Yes' | 'No' | 'Maybe';
+  // Dynamic responses for the 5 sets
+  responses: {
+    questionId: string;
+    questionText: string;
+    answer: string | string[] | Record<string, string>; // Record for matrix questions
+  }[];
+  category?: string; // e.g. "Social Media Usage"
 }

@@ -1,15 +1,238 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
 import Button from '../Button';
+import { SpinFeedbackResponse } from '../../types';
 
 interface SpinFeedbackModalProps {
     isOpen: boolean;
     prizeAmount: number;
     userName: string;
     userEmail: string;
-    onSubmit: (rating: number, favoriteAspect: string, wouldRecommend: string) => void;
+    onSubmit: (responses: SpinFeedbackResponse['responses'], category: string) => void;
 }
+
+type QuestionType = 'single' | 'multiple' | 'matrix';
+
+interface Question {
+    id: string;
+    text: string;
+    type: QuestionType;
+    options?: string[];
+    rows?: string[]; // For matrix
+    columns?: string[]; // For matrix
+}
+
+interface QuestionSet {
+    id: string;
+    title: string;
+    questions: Question[];
+}
+
+const QUESTION_SETS: QuestionSet[] = [
+    {
+        id: 'set1',
+        title: 'Social Media Usage',
+        questions: [
+            {
+                id: 'Q1',
+                text: 'On average, how many hours per day do you spend on social media?',
+                type: 'single',
+                options: ['Less than 1 hour', '1-2 hours', '3-4 hours', '5-6 hours', 'More than 6 hours']
+            },
+            {
+                id: 'Q2',
+                text: 'How often do you compare yourself to others based on what you see on social media?',
+                type: 'single',
+                options: ['Never', 'Rarely', 'Sometimes', 'Often', 'Always']
+            },
+            {
+                id: 'Q3',
+                text: 'After spending time on social media, how do you typically feel about yourself?',
+                type: 'single',
+                options: ['Much more positive', 'Slightly more positive', 'No change', 'Slightly more negative', 'Much more negative']
+            }
+        ]
+    },
+    {
+        id: 'set2',
+        title: 'Social Media & Self-Reflection',
+        questions: [
+            {
+                id: 'Q4',
+                text: 'In the past 6 months, has social media made you feel any of the following? (Select all that apply)',
+                type: 'multiple',
+                options: [
+                    'More confident about myself',
+                    'Anxious about my appearance',
+                    'Left out or excluded',
+                    'Pressure to present a perfect image',
+                    'Inspired or motivated',
+                    'Inadequate compared to others',
+                    'Connected to friends/community',
+                    'None of the above'
+                ]
+            },
+            {
+                id: 'Q5',
+                text: 'How often do you find yourself replaying past negative experiences in your mind?',
+                type: 'single',
+                options: ['Never or rarely', 'Sometimes (1-2 times per week)', 'Often (3-5 times per week)', 'Very often (almost daily)', 'Constantly (multiple times daily)']
+            },
+            {
+                id: 'Q6',
+                text: 'When you think about difficult situations from your past, do you:',
+                type: 'single',
+                options: [
+                    'Actively try to understand and move forward',
+                    'Think about them occasionally but don\'t dwell',
+                    'Find it difficult to stop thinking about them',
+                    'Feel stuck reliving the same thoughts repeatedly',
+                    'Intentionally revisit them to process feelings'
+                ]
+            }
+        ]
+    },
+    {
+        id: 'set3',
+        title: 'Past Experiences & Body Image',
+        questions: [
+            {
+                id: 'Q7',
+                text: 'Which statement best describes how you relate to your past negative experiences?',
+                type: 'single',
+                options: [
+                    'They are part of my history, but don\'t define who I am',
+                    'I have learned from them and mostly moved on',
+                    'I think about them regularly and they influence my current identity',
+                    'They are central to understanding who I am and how I see myself',
+                    'I actively work to not let them define me'
+                ]
+            },
+            {
+                id: 'Q8',
+                text: 'In the past month, have you repeatedly thought about negative experiences affecting any of the following? (Select all that apply)',
+                type: 'multiple',
+                options: [
+                    'My academic performance',
+                    'My relationships with friends/family',
+                    'My mood or emotional well-being',
+                    'My ability to trust others',
+                    'My self-confidence',
+                    'My physical health (sleep, appetite, etc.)',
+                    'My sense of personal agency/control',
+                    'None of the above'
+                ]
+            },
+            {
+                id: 'Q9',
+                text: 'On average, how many hours per day do you spend viewing beauty, fashion, fitness, or lifestyle content on social media?',
+                type: 'single',
+                options: ['Less than 30 minutes', '30 minutes to 1 hour', '1-2 hours', '3-4 hours', 'More than 4 hours']
+            }
+        ]
+    },
+    {
+        id: 'set4',
+        title: 'Beauty Standards & Comparison',
+        questions: [
+            {
+                id: 'Q10',
+                text: 'Which beauty standards do you feel most pressured by? (Select all that apply)',
+                type: 'multiple',
+                options: [
+                    'Fair/light skin tone',
+                    'Slim body type',
+                    'Western facial features',
+                    'Traditional Indian beauty ideals',
+                    'Influencer/celebrity aesthetics',
+                    'Perfect skin (acne-free, blemish-free)',
+                    'Specific body measurements',
+                    'None of the above'
+                ]
+            },
+            {
+                id: 'Q11',
+                text: 'How often do you compare your appearance to:',
+                type: 'matrix',
+                rows: [
+                    'Indian celebrities/influencers',
+                    'International/Western celebrities/influencers',
+                    'Friends and peers in real life'
+                ],
+                columns: ['Never', 'Rarely', 'Sometimes', 'Often', 'Always']
+            },
+            {
+                id: 'Q12',
+                text: 'In the past 6 months, has social media content about beauty/appearance made you feel: (Select all that apply)',
+                type: 'multiple',
+                options: [
+                    'Anxious or stressed about my looks',
+                    'Motivated to improve my appearance',
+                    'Ashamed of my body or features',
+                    'Pressure to use beauty products/treatments',
+                    'Desire to edit or filter my photos',
+                    'Inadequate or not good enough',
+                    'Inspired and confident',
+                    'No significant impact'
+                ]
+            }
+        ]
+    },
+    {
+        id: 'set5',
+        title: 'Relationships & Mental Health',
+        questions: [
+            {
+                id: 'Q13',
+                text: 'How have toxic relationships affected your mental health? (Select all that apply)',
+                type: 'multiple',
+                options: [
+                    'Anxiety, panic attacks, or constant worry',
+                    'Depression or persistent sadness',
+                    'Low self-esteem or loss of identity',
+                    'Difficulty trusting others',
+                    'Post-traumatic stress symptoms',
+                    'Sleep disturbances',
+                    'Self-harm or suicidal thoughts',
+                    'Eating disorders or disordered eating',
+                    'Substance use/abuse',
+                    'Physical symptoms',
+                    'Difficulty setting boundaries',
+                    'People-pleasing or fear of conflict',
+                    'No significant mental health impact'
+                ]
+            },
+            {
+                id: 'Q14',
+                text: 'How would you rate your current self-esteem/self-worth in the context of your toxic relationship experiences?',
+                type: 'single',
+                options: ['Very Poor', 'Poor', 'Neutral', 'Good', 'Excellent']
+            },
+            {
+                id: 'Q15',
+                text: 'What factors have made it harder to leave or avoid toxic relationships? (Select all that apply)',
+                type: 'multiple',
+                options: [
+                    'Financial dependence',
+                    'Fear of the person\'s reaction or retaliation',
+                    'Cultural or religious expectations',
+                    'Family/community pressure',
+                    'Still loved them / hoped they would change',
+                    'Low self-worth (believed I deserved it)',
+                    'Didn\'t recognize it was toxic until later',
+                    'Lack of support system or resources',
+                    'Shared living situation or children involved',
+                    'Gender, race, or other identity factors',
+                    'Mental health challenges or past trauma',
+                    'Disability or chronic illness',
+                    'Immigration status or language barriers',
+                    'Not applicable'
+                ]
+            }
+        ]
+    }
+];
 
 const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
     isOpen,
@@ -18,38 +241,80 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
     userEmail,
     onSubmit
 }) => {
-    const [rating, setRating] = useState<number>(0);
-    const [hoverRating, setHoverRating] = useState<number>(0);
-    const [favoriteAspect, setFavoriteAspect] = useState<string>('');
-    const [wouldRecommend, setWouldRecommend] = useState<string>('');
+    const [currentSet, setCurrentSet] = useState<QuestionSet | null>(null);
+    const [answers, setAnswers] = useState<Record<string, any>>({});
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-    const aspects = [
-        { value: 'Events', emoji: '🎭', label: 'Events' },
-        { value: 'Prizes', emoji: '🎁', label: 'Prizes' },
-        { value: 'Community', emoji: '👥', label: 'Community' },
-        { value: 'Organization', emoji: '📋', label: 'Organization' },
-        { value: 'Other', emoji: '✨', label: 'Other' }
-    ];
+    // Reset when opening
+    useEffect(() => {
+        if (isOpen) {
+            // Pick a random set
+            const randomSet = QUESTION_SETS[Math.floor(Math.random() * QUESTION_SETS.length)];
+            setCurrentSet(randomSet);
+            // Clear answers
+            setAnswers({});
+            setTouched({});
+        }
+    }, [isOpen]);
 
-    const recommendations = [
-        { value: 'Yes', emoji: '👍', label: 'Yes', color: 'bg-green-500 hover:bg-green-600' },
-        { value: 'Maybe', emoji: '🤔', label: 'Maybe', color: 'bg-yellow-500 hover:bg-yellow-600' },
-        { value: 'No', emoji: '👎', label: 'No', color: 'bg-red-500 hover:bg-red-600' }
-    ];
+    const handleSingleChange = (qId: string, value: string) => {
+        setAnswers(prev => ({ ...prev, [qId]: value }));
+    };
+
+    const handleMultiChange = (qId: string, value: string) => {
+        setAnswers(prev => {
+            const current: string[] = prev[qId] || [];
+            if (current.includes(value)) {
+                return { ...prev, [qId]: current.filter(item => item !== value) };
+            } else {
+                return { ...prev, [qId]: [...current, value] };
+            }
+        });
+    };
+
+    const handleMatrixChange = (qId: string, row: string, col: string) => {
+        setAnswers(prev => {
+            const currentMatrix = prev[qId] || {};
+            return {
+                ...prev,
+                [qId]: { ...currentMatrix, [row]: col }
+            };
+        });
+    };
+
+    const isQuestionAnswered = (q: Question) => {
+        const val = answers[q.id];
+        if (!val) return false;
+        if (q.type === 'single') return !!val;
+        if (q.type === 'multiple') return val.length > 0;
+        if (q.type === 'matrix') {
+            // Must have answer for every row
+            return q.rows?.every(row => val[row]) || false;
+        }
+        return false;
+    };
+
+    const allAnswered = currentSet?.questions.every(isQuestionAnswered) || false;
 
     const handleSubmit = () => {
-        if (rating > 0 && favoriteAspect && wouldRecommend) {
-            onSubmit(rating, favoriteAspect, wouldRecommend);
-            // Reset form
-            setRating(0);
-            setFavoriteAspect('');
-            setWouldRecommend('');
+        if (allAnswered && currentSet) {
+            // Format responses
+            const formattedResponses = currentSet.questions.map(q => ({
+                questionId: q.id,
+                questionText: q.text,
+                answer: answers[q.id]
+            }));
+
+            onSubmit(formattedResponses, currentSet.title);
+        } else {
+            // Mark all as touched to show errors
+            const newTouched: Record<string, boolean> = {};
+            currentSet?.questions.forEach(q => newTouched[q.id] = true);
+            setTouched(newTouched);
         }
     };
 
-    const isFormValid = rating > 0 && favoriteAspect && wouldRecommend;
-
-    if (!isOpen) return null;
+    if (!isOpen || !currentSet) return null;
 
     return (
         <AnimatePresence>
@@ -59,7 +324,7 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="absolute inset-0 backdrop-blur-md"
+                    className="absolute inset-0 backdrop-blur-md bg-slate-900/20"
                 />
 
                 {/* Modal */}
@@ -68,14 +333,10 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
                     animate={{ scale: 1, opacity: 1, y: 0 }}
                     exit={{ scale: 0.9, opacity: 0, y: 20 }}
                     transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="bg-white rounded-2xl p-6 max-w-md w-full relative z-10 shadow-xl overflow-y-auto max-h-[90vh]"
+                    className="bg-white rounded-2xl p-6 max-w-2xl w-full relative z-10 shadow-2xl overflow-y-auto max-h-[90vh]"
                 >
-                    {/* Decorative Background */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-brand-purple/10 to-brand-pink/10 rounded-full blur-3xl -z-10" />
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-brand-yellow/10 to-brand-orange/10 rounded-full blur-3xl -z-10" />
-
                     {/* Header */}
-                    <div className="text-center mb-8">
+                    <div className="text-center mb-6">
                         <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
@@ -84,95 +345,95 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
                         >
                             <Sparkles className="text-white" size={32} />
                         </motion.div>
-                        <h2 className="text-2xl font-bold text-slate-800 mb-2">Quick Feedback</h2>
+                        <h2 className="text-2xl font-bold text-slate-800 mb-1">{currentSet.title}</h2>
                         <p className="text-slate-500 text-sm">
-                            Help us improve! Answer 3 quick questions to claim your <span className="font-bold text-brand-purple">{prizeAmount} bonus points</span>
+                            Answer 3 quick questions to claim your <span className="font-bold text-brand-purple">{prizeAmount} bonus points</span>
                         </p>
                     </div>
 
-                    {/* Question 1: Rating */}
-                    <div className="mb-8">
-                        <label className="block text-sm font-bold text-slate-700 mb-3">
-                            1. How would you rate your overall Youthopia experience?
-                        </label>
-                        <div className="flex justify-center gap-2">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <motion.button
-                                    key={star}
-                                    whileHover={{ scale: 1.2 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => setRating(star)}
-                                    onMouseEnter={() => setHoverRating(star)}
-                                    onMouseLeave={() => setHoverRating(0)}
-                                    className="focus:outline-none transition-all"
-                                >
-                                    <Star
-                                        size={40}
-                                        className={`transition-all ${star <= (hoverRating || rating)
-                                            ? 'fill-yellow-400 text-yellow-400'
-                                            : 'text-slate-300'
-                                            }`}
-                                    />
-                                </motion.button>
-                            ))}
-                        </div>
-                        {rating > 0 && (
-                            <motion.p
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="text-center text-sm text-slate-500 mt-2"
-                            >
-                                {rating === 5 ? '🔥 Amazing!' : rating === 4 ? '😊 Great!' : rating === 3 ? '👍 Good!' : rating === 2 ? '😐 Okay' : '😕 Needs improvement'}
-                            </motion.p>
-                        )}
-                    </div>
+                    {/* Questions */}
+                    <div className="space-y-8 mb-8">
+                        {currentSet.questions.map((q, idx) => (
+                            <div key={q.id} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                <h3 className="font-bold text-slate-800 mb-4 flex gap-2">
+                                    <span className="text-brand-purple">{idx + 1}.</span> {q.text}
+                                </h3>
 
-                    {/* Question 2: Favorite Aspect */}
-                    <div className="mb-8">
-                        <label className="block text-sm font-bold text-slate-700 mb-3">
-                            2. What did you enjoy most about the engagement activities?
-                        </label>
-                        <div className="grid grid-cols-3 gap-3">
-                            {aspects.map((aspect) => (
-                                <motion.button
-                                    key={aspect.value}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => setFavoriteAspect(aspect.value)}
-                                    className={`p-4 rounded-2xl border-2 transition-all text-center ${favoriteAspect === aspect.value
-                                        ? 'border-brand-purple bg-brand-purple/10 shadow-lg'
-                                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                                        }`}
-                                >
-                                    <div className="text-3xl mb-2">{aspect.emoji}</div>
-                                    <div className="text-xs font-bold text-slate-700">{aspect.label}</div>
-                                </motion.button>
-                            ))}
-                        </div>
-                    </div>
+                                {q.type === 'single' && (
+                                    <div className="space-y-2">
+                                        {q.options?.map((opt) => (
+                                            <label key={opt} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200 cursor-pointer hover:border-brand-purple/50 transition-colors">
+                                                <input
+                                                    type="radio"
+                                                    name={q.id}
+                                                    value={opt}
+                                                    checked={answers[q.id] === opt}
+                                                    onChange={(e) => handleSingleChange(q.id, e.target.value)}
+                                                    className="w-4 h-4 text-brand-purple focus:ring-brand-purple"
+                                                />
+                                                <span className="text-sm text-slate-700">{opt}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                )}
 
-                    {/* Question 3: Recommendation */}
-                    <div className="mb-8">
-                        <label className="block text-sm font-bold text-slate-700 mb-3">
-                            3. Would you recommend Youthopia to your friends?
-                        </label>
-                        <div className="grid grid-cols-3 gap-3">
-                            {recommendations.map((rec) => (
-                                <motion.button
-                                    key={rec.value}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => setWouldRecommend(rec.value)}
-                                    className={`p-4 rounded-2xl transition-all text-center text-white font-bold ${wouldRecommend === rec.value
-                                        ? `${rec.color} shadow-lg ring-4 ring-offset-2 ring-${rec.color.split('-')[1]}-300`
-                                        : 'bg-slate-300 hover:bg-slate-400'
-                                        }`}
-                                >
-                                    <div className="text-2xl mb-1">{rec.emoji}</div>
-                                    <div className="text-sm">{rec.label}</div>
-                                </motion.button>
-                            ))}
-                        </div>
+                                {q.type === 'multiple' && (
+                                    <div className="space-y-2">
+                                        {q.options?.map((opt) => (
+                                            <label key={opt} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-slate-200 cursor-pointer hover:border-brand-purple/50 transition-colors">
+                                                <input
+                                                    type="checkbox"
+                                                    value={opt}
+                                                    checked={answers[q.id]?.includes(opt) || false}
+                                                    onChange={(e) => handleMultiChange(q.id, e.target.value)}
+                                                    className="w-4 h-4 text-brand-purple focus:ring-brand-purple rounded"
+                                                />
+                                                <span className="text-sm text-slate-700">{opt}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {q.type === 'matrix' && (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full min-w-[500px]">
+                                            <thead>
+                                                <tr>
+                                                    <th className="p-2"></th>
+                                                    {q.columns?.map(col => (
+                                                        <th key={col} className="p-2 text-xs font-semibold text-slate-500">{col}</th>
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100">
+                                                {q.rows?.map(row => (
+                                                    <tr key={row}>
+                                                        <td className="p-2 text-sm text-slate-700 font-medium">{row}</td>
+                                                        {q.columns?.map(col => (
+                                                            <td key={col} className="p-2 text-center">
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`${q.id}_${row}`}
+                                                                    checked={answers[q.id]?.[row] === col}
+                                                                    onChange={() => handleMatrixChange(q.id, row, col)}
+                                                                    className="w-4 h-4 text-brand-purple focus:ring-brand-purple"
+                                                                />
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                )}
+
+                                {touched[q.id] && !isQuestionAnswered(q) && (
+                                    <div className="mt-2 text-red-500 text-xs flex items-center gap-1">
+                                        <AlertCircle size={12} /> This question is required
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
 
                     {/* Submit Button */}
@@ -180,32 +441,21 @@ const SpinFeedbackModal: React.FC<SpinFeedbackModalProps> = ({
                         variant="primary"
                         fullWidth
                         onClick={handleSubmit}
-                        disabled={!isFormValid}
-                        className={`shadow-xl transition-all ${isFormValid
+                        disabled={!allAnswered && Object.keys(touched).length > 0}
+                        className={`shadow-xl transition-all h-12 ${allAnswered
                             ? 'shadow-brand-purple/30 hover:shadow-brand-purple/50'
-                            : 'opacity-50 cursor-not-allowed'
+                            : 'opacity-80'
                             }`}
                     >
-                        {isFormValid ? (
+                        {allAnswered ? (
                             <>
                                 <CheckCircle2 size={20} />
                                 Submit & Claim {prizeAmount} Points
                             </>
                         ) : (
-                            'Please answer all questions'
+                            'Submit Answer'
                         )}
                     </Button>
-
-                    {/* Progress Indicator */}
-                    <div className="mt-4 flex justify-center gap-2">
-                        {[rating > 0, favoriteAspect !== '', wouldRecommend !== ''].map((completed, i) => (
-                            <div
-                                key={i}
-                                className={`w-2 h-2 rounded-full transition-all ${completed ? 'bg-brand-purple w-8' : 'bg-slate-200'
-                                    }`}
-                            />
-                        ))}
-                    </div>
                 </motion.div>
             </div>
         </AnimatePresence>

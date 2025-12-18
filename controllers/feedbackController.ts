@@ -45,9 +45,8 @@ export const FeedbackController = {
         userEmail: feedback.userEmail,
         userName: feedback.userName,
         prizeAmount: feedback.prizeAmount,
-        rating: feedback.rating,
-        favoriteAspect: feedback.favoriteAspect,
-        wouldRecommend: feedback.wouldRecommend
+        responses: feedback.responses,
+        category: feedback.category
       };
       await apiClient.post('/feedback/spin', payload);
     } catch (e) {

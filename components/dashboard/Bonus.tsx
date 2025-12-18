@@ -15,7 +15,7 @@ interface BonusProps {
   onNavigateToRedeem: () => void;
   userName: string;
   userEmail: string;
-  onSubmitFeedback: (rating: number, favoriteAspect: string, wouldRecommend: string, prizeAmount: number) => void;
+  onSubmitFeedback: (responses: any[], category: string, prizeAmount: number) => void;
 }
 
 const AnimatedCounter = ({ value }: { value: number }) => {
@@ -108,9 +108,9 @@ const Bonus: React.FC<BonusProps> = ({ bonus, onAddBonus, spinsAvailable, events
     }, 2500);
   };
 
-  const handleFeedbackSubmit = (rating: number, favoriteAspect: string, wouldRecommend: string) => {
+  const handleFeedbackSubmit = (responses: any[], category: string) => {
     // Submit feedback
-    onSubmitFeedback(rating, favoriteAspect, wouldRecommend, pendingPrize);
+    onSubmitFeedback(responses, category, pendingPrize);
 
     // Call spin point endpoint (consume spin / transaction)
     onSpinUsed(pendingPrize);

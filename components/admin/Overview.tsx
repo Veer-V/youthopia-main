@@ -1,19 +1,40 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Users, Calendar, Trophy, Activity, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Users, Calendar, Trophy, Activity, ArrowUpRight, ArrowDownRight, ShoppingBag } from 'lucide-react';
 import { useData } from '../../contexts/DataContext';
 
 const Overview: React.FC = () => {
-  const { users, registrations, events } = useData();
+  const { users, registrations, events, redemptions } = useData();
 
   const totalStudents = users.filter(u => u.role === 'student').length;
-  // Explicitly type the accumulator to avoid TS unknown type errors
-  const totalRegistrations = Object.values(registrations).reduce((acc: number, curr) => acc + (curr as string[]).length, 0);
-  const totalBonus = users.reduce((acc, u) => acc + (u.bonus || 0), 0);
+  // Calculate total registrations by summing up participants in all events (includes team members)
+  const totalRegistrations = events.reduce((acc, event) => acc + (event.registered?.length || 0), 0);
+
+  // Calculate total points from all students
+  const totalBonus = users.reduce((acc, u) => acc + (u.points || u.bonus || 0), 0);
+
+  // Calculate Approved Redemptions and Categories
+  const approvedRedemptions = redemptions.filter(r => r.status === 'Approved');
+  const totalRedemptions = approvedRedemptions.length;
+
+  const redemptionCategories = {
+    Diary: 0,
+    Keychain: 0,
+    Sipper: 0,
+    Badge: 0
+  };
+
+  approvedRedemptions.forEach(r => {
+    const item = r.item.toLowerCase();
+    if (item.includes('diary')) redemptionCategories.Diary++;
+    else if (item.includes('keychain')) redemptionCategories.Keychain++;
+    else if (item.includes('sipper')) redemptionCategories.Sipper++;
+    else if (item.includes('badge')) redemptionCategories.Badge++;
+  });
 
   // Real-time Stats
-  const stats = [
+  const stats: any[] = [
     {
       label: 'Total Students',
       value: totalStudents.toString(),
@@ -31,7 +52,7 @@ const Overview: React.FC = () => {
       bg: 'bg-purple-50 text-purple-600'
     },
     {
-      label: 'Bonus Economy',
+      label: 'Total Points Earned',
       value: totalBonus.toLocaleString(),
       icon: <Trophy className="text-yellow-600" size={24} />,
       change: '+5%',
@@ -45,6 +66,15 @@ const Overview: React.FC = () => {
       change: '0%',
       trend: 'up',
       bg: 'bg-green-50 text-green-600'
+    },
+    {
+      label: 'Redemptions Done',
+      value: totalRedemptions.toString(),
+      icon: <ShoppingBag className="text-pink-600" size={24} />,
+      change: '+10%',
+      trend: 'up',
+      bg: 'bg-pink-50 text-pink-600',
+      categories: redemptionCategories
     },
   ];
 
@@ -80,13 +110,13 @@ const Overview: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Stats Grid - Updated to responsive grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
         {stats.map((stat, idx) => (
           <motion.div
             key={idx}
             variants={item}
-            className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden"
+            className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all relative overflow-hidden group"
           >
             <div className="flex justify-between items-start mb-4">
               <div className={`p-3 rounded-2xl ${stat.bg}`}>{stat.icon}</div>
@@ -98,8 +128,20 @@ const Overview: React.FC = () => {
             <h3 className="text-3xl font-bold text-slate-900 mb-1">{stat.value}</h3>
             <p className="text-slate-500 text-sm font-medium">{stat.label}</p>
 
+            {/* Extra Info (Categories) for Redemption Card */}
+            {stat.categories && (
+              <div className="mt-4 pt-4 border-t border-slate-100 space-y-1">
+                {Object.entries(stat.categories).map(([cat, count]) => (
+                  <div key={cat} className="flex justify-between text-xs">
+                    <span className="text-slate-500">{cat}</span>
+                    <span className="font-bold text-slate-700">{count}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Decor */}
-            <div className="absolute -bottom-4 -right-4 opacity-5 pointer-events-none scale-150 grayscale">
+            <div className="absolute -bottom-4 -right-4 opacity-5 pointer-events-none scale-150 grayscale group-hover:opacity-10 transition-opacity">
               {stat.icon}
             </div>
           </motion.div>

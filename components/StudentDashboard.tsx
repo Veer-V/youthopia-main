@@ -82,7 +82,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
     setActiveSection('redeem');
   };
 
-  const handleSpinFeedback = (rating: number, favoriteAspect: string, wouldRecommend: string, prizeAmount: number) => {
+  const handleSpinFeedback = (responses: any[], category: string, prizeAmount: number) => {
     if (!user) return;
 
     const feedback: SpinFeedbackResponse = {
@@ -91,9 +91,8 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ onLogout, user }) =
       userName: user.name,
       timestamp: new Date().toLocaleString(),
       prizeAmount,
-      rating,
-      favoriteAspect: favoriteAspect as 'Events' | 'Prizes' | 'Community' | 'Organization' | 'Other',
-      wouldRecommend: wouldRecommend as 'Yes' | 'No' | 'Maybe'
+      responses,
+      category
     };
 
     addSpinFeedback(feedback);

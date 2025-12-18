@@ -1,8 +1,8 @@
 
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Star, Award, ThumbsUp } from 'lucide-react';
-import { SimpleBarChart } from './Charts';
+import { Check, Star, Award, ThumbsUp, MessageSquare, ListFilter } from 'lucide-react';
+// import { SimpleBarChart } from './Charts'; // Removed usage if not needed for spin or kept for events
 import { useData } from '../../contexts/DataContext';
 
 const Feedback: React.FC = () => {
@@ -29,43 +29,32 @@ const Feedback: React.FC = () => {
 
    // Calculate spin feedback statistics
    const spinStats = useMemo(() => {
-      if (spinFeedbacks.length === 0) {
-         return {
-            avgRating: 0,
-            totalResponses: 0,
-            recommendYes: 0,
-            recommendMaybe: 0,
-            recommendNo: 0,
-            aspectCounts: {} as Record<string, number>
-         };
-      }
-
-      const totalRating = spinFeedbacks.reduce((sum, f) => sum + f.rating, 0);
-      const avgRating = totalRating / spinFeedbacks.length;
-
-      const recommendCounts = { Yes: 0, Maybe: 0, No: 0 };
-      const aspectCounts: Record<string, number> = {};
+      const categoryCounts: Record<string, number> = {};
 
       spinFeedbacks.forEach(f => {
-         recommendCounts[f.wouldRecommend]++;
-         aspectCounts[f.favoriteAspect] = (aspectCounts[f.favoriteAspect] || 0) + 1;
+         const cat = f.category || 'Unknown';
+         categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
       });
 
       return {
-         avgRating,
          totalResponses: spinFeedbacks.length,
-         recommendYes: recommendCounts.Yes,
-         recommendMaybe: recommendCounts.Maybe,
-         recommendNo: recommendCounts.No,
-         aspectCounts
+         categoryCounts
       };
    }, [spinFeedbacks]);
+
+   const formatAnswer = (ans: any) => {
+      if (Array.isArray(ans)) return ans.join(', ');
+      if (typeof ans === 'object' && ans !== null) {
+         return Object.entries(ans).map(([k, v]) => `${k}: ${v}`).join('; ');
+      }
+      return String(ans);
+   };
 
    // Use real items for feed
    const feedItems = feedbacks.slice().reverse().slice(0, 50); // Show last 50
    const spinFeedItems = spinFeedbacks.slice().reverse().slice(0, 50);
 
-   const sentimentData = [20, 45, 60, 80, 50, 65, 30]; // Keep chart static for now as historical data tracking is complex
+   const sentimentData = [20, 45, 60, 80, 50, 65, 30]; // Keep chart static for now 
    const sentimentLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
    return (
@@ -118,14 +107,6 @@ const Feedback: React.FC = () => {
                </div>
 
                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* Chart Area */}
-                  {/* <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col h-[400px]">
-                     <h3 className="font-bold text-slate-800 mb-6">Happiness Trend</h3>
-                     <div className="flex-1 w-full px-4 pb-4">
-                        <SimpleBarChart data={sentimentData} labels={sentimentLabels} color="bg-gradient-to-t from-yellow-400 to-orange-400" />
-                     </div>
-                  </div> */}
-
                   {/* Recent Feed */}
                   <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col h-[400px]">
                      <div className="flex justify-between items-center mb-6">
@@ -169,71 +150,11 @@ const Feedback: React.FC = () => {
          ) : (
             <>
                {/* Spin Feedback Statistics */}
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <motion.div
                      initial={{ scale: 0.9, opacity: 0 }}
                      animate={{ scale: 1, opacity: 1 }}
-                     className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm"
-                  >
-                     <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
-                           <Star className="text-yellow-600" size={24} />
-                        </div>
-                        <div>
-                           <p className="text-sm text-slate-500 font-medium">Average Rating</p>
-                           <h3 className="text-3xl font-bold text-slate-900">
-                              {spinStats.avgRating.toFixed(1)} <span className="text-lg text-slate-400">/5</span>
-                           </h3>
-                        </div>
-                     </div>
-                     <div className="flex gap-1 mt-2">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                           <Star
-                              key={star}
-                              size={16}
-                              className={star <= Math.round(spinStats.avgRating) ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'}
-                           />
-                        ))}
-                     </div>
-                  </motion.div>
-
-                  <motion.div
-                     initial={{ scale: 0.9, opacity: 0 }}
-                     animate={{ scale: 1, opacity: 1 }}
-                     transition={{ delay: 0.1 }}
-                     className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm"
-                  >
-                     <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                           <ThumbsUp className="text-green-600" size={24} />
-                        </div>
-                        <div>
-                           <p className="text-sm text-slate-500 font-medium">Would Recommend</p>
-                           <h3 className="text-3xl font-bold text-slate-900">
-                              {spinStats.totalResponses > 0
-                                 ? Math.round((spinStats.recommendYes / spinStats.totalResponses) * 100)
-                                 : 0}%
-                           </h3>
-                        </div>
-                     </div>
-                     <div className="flex gap-2 text-xs mt-2">
-                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full font-bold">
-                           👍 {spinStats.recommendYes}
-                        </span>
-                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full font-bold">
-                           🤔 {spinStats.recommendMaybe}
-                        </span>
-                        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full font-bold">
-                           👎 {spinStats.recommendNo}
-                        </span>
-                     </div>
-                  </motion.div>
-
-                  <motion.div
-                     initial={{ scale: 0.9, opacity: 0 }}
-                     animate={{ scale: 1, opacity: 1 }}
-                     transition={{ delay: 0.2 }}
-                     className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm"
+                     className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm col-span-1 md:col-span-1"
                   >
                      <div className="flex items-center gap-3 mb-3">
                         <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
@@ -244,29 +165,38 @@ const Feedback: React.FC = () => {
                            <h3 className="text-3xl font-bold text-slate-900">{spinStats.totalResponses}</h3>
                         </div>
                      </div>
-                     <p className="text-xs text-slate-400 mt-2">
-                        Most loved: <span className="font-bold text-slate-600">
-                           {Object.keys(spinStats.aspectCounts).length > 0
-                              ? Object.entries(spinStats.aspectCounts).sort((a: [string, number], b: [string, number]) => b[1] - a[1])[0][0]
-                              : 'N/A'}
-                        </span>
-                     </p>
+                  </motion.div>
+
+                  <motion.div
+                     initial={{ scale: 0.9, opacity: 0 }}
+                     animate={{ scale: 1, opacity: 1 }}
+                     transition={{ delay: 0.1 }}
+                     className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm col-span-1 md:col-span-3"
+                  >
+                     <h4 className="text-sm text-slate-500 font-medium mb-2">Responses by Category</h4>
+                     <div className="flex flex-wrap gap-2">
+                        {Object.entries(spinStats.categoryCounts).map(([cat, count], i) => (
+                           <div key={i} className="px-3 py-2 bg-slate-50 rounded-lg border border-slate-100 flex items-center gap-2">
+                              <span className="text-xs font-bold text-slate-600">{cat}</span>
+                              <span className="bg-brand-purple text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">{count}</span>
+                           </div>
+                        ))}
+                     </div>
                   </motion.div>
                </div>
 
                {/* Spin Feedback Table */}
-               <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+               <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden overflow-x-auto">
                   <div className="p-6 border-b border-slate-100">
                      <h3 className="font-bold text-slate-800">Recent Spin Feedback</h3>
                   </div>
-                  <div className="overflow-x-auto">
+                  <div className="min-w-full">
                      <table className="w-full">
                         <thead className="bg-slate-50">
                            <tr>
                               <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">User</th>
-                              <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Rating</th>
-                              <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Favorite Aspect</th>
-                              <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Recommend</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Category</th>
+                              <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Responses</th>
                               <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Prize</th>
                               <th className="px-6 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Time</th>
                            </tr>
@@ -279,46 +209,42 @@ const Feedback: React.FC = () => {
                                  animate={{ opacity: 1 }}
                                  className="hover:bg-slate-50 transition-colors"
                               >
-                                 <td className="px-6 py-4">
+                                 <td className="px-6 py-4 align-top">
                                     <div>
                                        <p className="text-sm font-bold text-slate-800">{feedback.userName}</p>
                                        <p className="text-xs text-slate-500">{feedback.userEmail}</p>
                                     </div>
                                  </td>
+                                 <td className="px-6 py-4 align-top">
+                                    <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold whitespace-nowrap">
+                                       {feedback.category || 'Feedback'}
+                                    </span>
+                                 </td>
                                  <td className="px-6 py-4">
-                                    <div className="flex gap-1">
-                                       {[1, 2, 3, 4, 5].map((star) => (
-                                          <Star
-                                             key={star}
-                                             size={14}
-                                             className={star <= feedback.rating ? 'fill-yellow-400 text-yellow-400' : 'text-slate-300'}
-                                          />
+                                    <div className="space-y-3">
+                                       {feedback.responses?.map((r, idx) => (
+                                          <div key={idx} className="text-sm">
+                                             <p className="text-slate-500 text-xs mb-0.5">{r.questionText}</p>
+                                             <p className="font-medium text-slate-800">{formatAnswer(r.answer)}</p>
+                                          </div>
                                        ))}
+                                       {(!feedback.responses || feedback.responses.length === 0) && (
+                                          <span className="text-slate-400 italic text-xs">No detail responses</span>
+                                       )}
                                     </div>
                                  </td>
-                                 <td className="px-6 py-4">
-                                    <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">
-                                       {feedback.favoriteAspect}
-                                    </span>
-                                 </td>
-                                 <td className="px-6 py-4">
-                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${feedback.wouldRecommend === 'Yes' ? 'bg-green-100 text-green-700' :
-                                       feedback.wouldRecommend === 'Maybe' ? 'bg-yellow-100 text-yellow-700' :
-                                          'bg-red-100 text-red-700'
-                                       }`}>
-                                       {feedback.wouldRecommend}
-                                    </span>
-                                 </td>
-                                 <td className="px-6 py-4">
+                                 <td className="px-6 py-4 align-top">
                                     <span className="text-sm font-bold text-brand-orange">+{feedback.prizeAmount}</span>
                                  </td>
-                                 <td className="px-6 py-4">
-                                    <span className="text-xs text-slate-500">{feedback.timestamp}</span>
+                                 <td className="px-6 py-4 align-top">
+                                    <div className="flex items-center text-xs text-slate-500 whitespace-nowrap">
+                                       {feedback.timestamp}
+                                    </div>
                                  </td>
                               </motion.tr>
                            )) : (
                               <tr>
-                                 <td colSpan={6} className="px-6 py-10 text-center text-slate-400">
+                                 <td colSpan={5} className="px-6 py-10 text-center text-slate-400">
                                     No spin feedback received yet
                                  </td>
                               </tr>
