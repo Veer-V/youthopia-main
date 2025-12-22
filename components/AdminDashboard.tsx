@@ -10,6 +10,8 @@ import MasterControl from './admin/MasterControl';
 import Feedback from './admin/Feedback';
 import Redemption from './admin/Redemption';
 
+import { useData } from '../contexts/DataContext';
+
 interface AdminDashboardProps {
   onLogout: () => void;
 }
@@ -17,17 +19,36 @@ interface AdminDashboardProps {
 type AdminSection = 'overview' | 'users' | 'master' | 'feedback' | 'redemption';
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
+  const { user } = useData();
   const [activeSection, setActiveSection] = useState<AdminSection>('overview');
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 
-  const menuItems = [
+  // Check permissions
+  // Logic: if event_names is present and includes 'all' (or is 'all'), show everything.
+  // Otherwise, hide Feedback and Redemption.
+  const hasFullAccess = (() => {
+    if (!user?.event_names) return false;
+    if (Array.isArray(user.event_names)) {
+      return user.event_names.includes('all');
+    }
+    return user.event_names === 'all';
+  })();
+
+  const rawMenuItems = [
     { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={20} /> },
     { id: 'master', label: 'Master Control', icon: <Sliders size={20} /> },
     { id: 'users', label: 'Users & Events', icon: <Users size={20} /> },
     { id: 'feedback', label: 'Feedback', icon: <MessageSquare size={20} /> },
     { id: 'redemption', label: 'Redemption', icon: <Gift size={20} /> },
   ];
+
+  const menuItems = rawMenuItems.filter(item => {
+    if (item.id === 'feedback' || item.id === 'redemption') {
+      return hasFullAccess;
+    }
+    return true;
+  });
 
   // Shortcut Listener
   useEffect(() => {
