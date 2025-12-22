@@ -70,7 +70,7 @@ export const AuthController = {
           email: email, // Placeholder or from response
           role: 'admin',
           spinsAvailable: 0,
-          event_assigned: response.event_assigned,
+          event_names: response.event_names || response.event_assigned,
           ...response // Spread any other fields
         };
 

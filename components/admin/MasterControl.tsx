@@ -239,8 +239,9 @@ const MasterControl: React.FC = () => {
 
    const filteredEvents = events.filter(e => {
       // Filter by Event Assignment (for Admins)
-      if (user?.role === 'admin' && user.event_assigned) {
-         if (user.event_assigned !== 'all' && e.title !== user.event_assigned) {
+      if (user?.role === 'admin' && user.event_names) {
+         const names = Array.isArray(user.event_names) ? user.event_names : [user.event_names];
+         if (!names.includes('all') && !names.includes(e.title)) {
             return false;
          }
       }

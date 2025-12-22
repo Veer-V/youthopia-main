@@ -16,8 +16,7 @@ export interface UserData {
   age?: string;
   gender?: string;
   admin_name?: string; // For admin users
-  event_assigned?: string; // For master control event filtering
-  event_names?: string[] | string; // Helper for hiding tabs if not "all"
+  event_names?: string | string[]; // For master control event filtering
   // Frontend props (computed or defaulted)
   role?: 'student' | 'admin' | 'executive';
   bonus?: number;

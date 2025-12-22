@@ -33,6 +33,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       return user.event_names.includes('all');
     }
     return user.event_names === 'all';
+
   })();
 
   const rawMenuItems = [
