@@ -38,7 +38,7 @@ const Redeem: React.FC<RedeemProps> = ({ onRedeem, userBonus, user }) => {
   const items: RedeemItem[] = [
     { name: 'Diary', cost: 750, image: '/image/diary.png', _id: "6943f8700e58eaffcfe40d06" },
     { name: 'Sipper', cost: 550, image: '/image/sipper.png', _id: "6943f88b0e58eaffcfe41095" },
-    { name: 'Keychain', cost: 350, image: '/image/keychain.png', _id: "6943f835687f16312607ab22 " },
+    { name: 'Keychain', cost: 350, image: '/image/keychain.png', _id: "694a1c5f0e58eaffcf1c8e74" },
     { name: 'Badge', cost: 150, image: '/image/badge.png', _id: "6943f8135ae79efb2d959002" },
   ];
 
