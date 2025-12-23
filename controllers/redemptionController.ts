@@ -3,74 +3,55 @@ import { apiClient } from './apiClient';
 
 export const RedemptionController = {
   getAll: async (): Promise<RedemptionRequest[]> => {
-    // Try GET /redeem
+    const allRequests: RedemptionRequest[] = [];
+
+    // Helper to process data
+    const processData = (items: any[], type: 'pending' | 'completed') => {
+      items.forEach((item: any) => {
+        // User requested 'completed' attribute for history, but JSON shows 'approved' holds the objects
+        const source = type === 'pending' ? item.transactions : item.approved;
+        if (source && typeof source === 'object') {
+          Object.values(source).forEach((t: any) => {
+            if (typeof t !== 'object' || !t || !t._id) return;
+
+            let uName = 'Unknown User';
+            let uId = '';
+
+            if (typeof t.user === 'string') {
+              uId = t.user;
+            } else if (t.user && typeof t.user === 'object') {
+              uName = t.user.name || 'Unknown User';
+              uId = t.user.Yid || t.user.id || t.user._id || '';
+            }
+
+            allRequests.push({
+              id: t._id,
+              user: uName,
+              userId: uId,
+              goodieId: item._id,
+              item: item.name || 'Unknown Item',
+              cost: Math.abs(t.points || 0),
+              status: type === 'pending' ? 'Pending' : 'Approved',
+              time: t.createdAt || new Date().toISOString(),
+              totalCompleted: item.completed
+            });
+          });
+        }
+      });
+    };
+
+    // Fetch Redemptions (both Pending and Completed) from Main API
     try {
       const data = await apiClient.get('/redeem');
       if (Array.isArray(data)) {
-        const allRequests: RedemptionRequest[] = [];
-        data.forEach((item: any) => {
-          // 1. Process Pending Transactions
-          if (item.transactions && typeof item.transactions === 'object') {
-            Object.values(item.transactions).forEach((t: any) => {
-              if (typeof t !== 'object' || !t || !t._id) return;
-
-              let uName = 'Unknown User';
-              let uId = '';
-
-              if (typeof t.user === 'string') {
-                uId = t.user;
-              } else if (t.user && typeof t.user === 'object') {
-                uName = t.user.name || 'Unknown User';
-                uId = t.user.Yid || t.user.id || t.user._id || '';
-              }
-
-              allRequests.push({
-                id: t._id,
-                user: uName,
-                userId: uId,
-                goodieId: item._id,
-                item: item.name || 'Unknown Item',
-                cost: Math.abs(t.points || 0),
-                status: 'Pending',
-                time: t.createdAt || new Date().toISOString()
-              });
-            });
-          }
-
-          // 2. Process Approved Transactions (History)
-          if (item.approved && typeof item.approved === 'object') {
-            Object.values(item.approved).forEach((t: any) => {
-              if (typeof t !== 'object' || !t || !t._id) return;
-
-              let uName = 'Unknown User';
-              let uId = '';
-
-              if (typeof t.user === 'string') {
-                uId = t.user;
-              } else if (t.user && typeof t.user === 'object') {
-                uName = t.user.name || 'Unknown User';
-                uId = t.user.Yid || t.user.id || t.user._id || '';
-              }
-
-              allRequests.push({
-                id: t._id,
-                user: uName,
-                userId: uId,
-                goodieId: item._id,
-                item: item.name || 'Unknown Item',
-                cost: Math.abs(t.points || 0),
-                status: 'Approved',
-                time: t.createdAt || new Date().toISOString()
-              });
-            });
-          }
-        });
-        return allRequests;
+        processData(data, 'pending');
+        processData(data, 'completed');
       }
     } catch (e) {
       console.error("Get Redemptions failed", e);
     }
-    return [];
+
+    return allRequests;
   },
 
   create: async (req: RedemptionRequest): Promise<RedemptionRequest[]> => {

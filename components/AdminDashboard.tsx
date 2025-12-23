@@ -5,6 +5,7 @@ import {
   LayoutDashboard, Users, Sliders, MessageSquare, Gift, LogOut, Menu, X, Command, Search
 } from 'lucide-react';
 import Overview from './admin/Overview';
+import CollegeDistribution from './admin/CollegeDistribution';
 import UsersEvents from './admin/UsersEvents';
 import MasterControl from './admin/MasterControl';
 import Feedback from './admin/Feedback';
@@ -12,11 +13,13 @@ import Redemption from './admin/Redemption';
 
 import { useData } from '../contexts/DataContext';
 
+import EventDistribution from './admin/EventDistribution';
+
 interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type AdminSection = 'overview' | 'users' | 'master' | 'feedback' | 'redemption';
+type AdminSection = 'overview' | 'users' | 'master' | 'feedback' | 'redemption' | 'college' | 'event-dist';
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const { user } = useData();
@@ -38,6 +41,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
   const rawMenuItems = [
     { id: 'overview', label: 'Overview', icon: <LayoutDashboard size={20} /> },
+    { id: 'college', label: 'College Dist.', icon: <LayoutDashboard size={20} /> },
+    { id: 'event-dist', label: 'Event Dist.', icon: <LayoutDashboard size={20} /> },
     { id: 'master', label: 'Master Control', icon: <Sliders size={20} /> },
     { id: 'users', label: 'Users & Events', icon: <Users size={20} /> },
     { id: 'feedback', label: 'Feedback', icon: <MessageSquare size={20} /> },
@@ -69,6 +74,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const renderContent = () => {
     switch (activeSection) {
       case 'overview': return <Overview />;
+      case 'college': return <CollegeDistribution />;
+      case 'event-dist': return <EventDistribution />;
       case 'users': return <UsersEvents />;
       case 'master': return <MasterControl />;
       case 'feedback': return <Feedback />;

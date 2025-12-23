@@ -15,6 +15,7 @@ export interface RedemptionRequest {
   cost: number;
   status: 'Pending' | 'Approved' | 'Rejected';
   time: string;
+  totalCompleted?: number;
 }
 
 interface DataContextType {
